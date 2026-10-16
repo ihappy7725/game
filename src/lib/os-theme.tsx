@@ -4,9 +4,8 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
+  useSyncExternalStore,
   useMemo,
-  useState,
   type ReactNode,
 } from "react";
 import { SCENES, type SceneId } from "@/lib/scenes";
@@ -70,29 +69,32 @@ type OsThemeValue = {
 
 const OsThemeContext = createContext<OsThemeValue | null>(null);
 
-const STORAGE_KEY = "toefl-os-mode";
+const STORAGE_KEY = "toefl-hub-mode-v2";
+
+let fallbackMode: OsMode = "arcade";
+const MODE_EVENT = "toefl-os-mode-change";
+function readMode(): OsMode {
+  try {
+    const value = window.localStorage.getItem(STORAGE_KEY);
+    return value === "study" || value === "arcade" ? value : fallbackMode;
+  } catch { return fallbackMode; }
+}
+function subscribeMode(update: () => void) {
+  window.addEventListener("storage", update);
+  window.addEventListener(MODE_EVENT, update);
+  return () => {
+    window.removeEventListener("storage", update);
+    window.removeEventListener(MODE_EVENT, update);
+  };
+}
 
 export function OsThemeProvider({ children }: { children: ReactNode }) {
-  // 서버와 첫 렌더를 맞추기 위해 항상 study로 시작하고,
-  // 저장된 모드는 마운트 이후에 반영한다 (하이드레이션 불일치 방지).
-  const [mode, setMode] = useState<OsMode>("study");
-
-  useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (saved === "study" || saved === "arcade") setMode(saved);
-    } catch {
-      // 프라이빗 모드 등에서 접근이 막혀도 기본 모드로 동작한다.
-    }
-  }, []);
-
+  // 서버 스냅샷과 저장소 구독을 분리해 하이드레이션과 탭 간 전환을 지원합니다.
+  const mode = useSyncExternalStore(subscribeMode, readMode, (): OsMode => "arcade");
   const apply = useCallback((next: OsMode) => {
-    setMode(next);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      // 저장 실패는 무시 — 화면 동작에는 영향이 없다.
-    }
+    fallbackMode = next;
+    try { window.localStorage.setItem(STORAGE_KEY, next); } catch { /* 저장 불가 시 메모리를 사용합니다. */ }
+    window.dispatchEvent(new Event(MODE_EVENT));
   }, []);
 
   const value = useMemo<OsThemeValue>(

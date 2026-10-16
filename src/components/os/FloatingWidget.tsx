@@ -8,7 +8,7 @@ import {
   type ReactNode,
   type RefObject,
 } from "react";
-import { motion } from "framer-motion";
+import { motion, useMotionValue } from "framer-motion";
 import { cn } from "@/lib/cn";
 
 type FloatingWidgetProps = {
@@ -33,7 +33,7 @@ function readSaved(id: string): Point | null {
     const raw = window.localStorage.getItem(storageKey(id));
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<Point>;
-    if (typeof parsed?.x === "number" && typeof parsed?.y === "number") {
+    if (typeof parsed?.x === "number" && Number.isFinite(parsed.x) && typeof parsed?.y === "number" && Number.isFinite(parsed.y)) {
       return { x: parsed.x, y: parsed.y };
     }
   } catch {
@@ -53,7 +53,9 @@ export function FloatingWidget({
   children,
   className,
 }: FloatingWidgetProps) {
-  const [position, setPosition] = useState<Point>(initial);
+  const initialRef = useRef(initial);
+  const x = useMotionValue(initial.x);
+  const y = useMotionValue(initial.y);
   const [lifted, setLifted] = useState(false);
   const elementRef = useRef<HTMLDivElement>(null);
 
@@ -75,17 +77,21 @@ export function FloatingWidget({
 
   // 저장된 위치는 마운트 이후에만 반영한다 (서버 렌더와 어긋나지 않게).
   useEffect(() => {
-    setPosition(clampToBounds(readSaved(id) ?? initial));
-    // initial은 상수로 넘어오므로 의존성에서 제외한다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, clampToBounds]);
+    const saved = clampToBounds(readSaved(id) ?? initialRef.current);
+    x.set(saved.x);
+    y.set(saved.y);
+  }, [id, clampToBounds, x, y]);
 
   // 창 크기가 바뀌면 화면 밖으로 밀려난 위젯을 다시 끌어들인다.
   useEffect(() => {
-    const onResize = () => setPosition((prev) => clampToBounds(prev));
+    const onResize = () => {
+      const next = clampToBounds({ x: x.get(), y: y.get() });
+      x.set(next.x);
+      y.set(next.y);
+    };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, [clampToBounds]);
+  }, [clampToBounds, x, y]);
 
   return (
     <motion.div
@@ -95,16 +101,17 @@ export function FloatingWidget({
       dragConstraints={boundsRef}
       dragElastic={0.04}
       initial={false}
-      animate={{ x: position.x, y: position.y, rotate }}
+      animate={{ rotate }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       onDragStart={() => setLifted(true)}
-      onDragEnd={(_, info) => {
+      onDragEnd={() => {
         setLifted(false);
         const next = clampToBounds({
-          x: position.x + info.offset.x,
-          y: position.y + info.offset.y,
+          x: x.get(),
+          y: y.get(),
         });
-        setPosition(next);
+        x.set(next.x);
+        y.set(next.y);
         try {
           window.localStorage.setItem(storageKey(id), JSON.stringify(next));
         } catch {
@@ -117,7 +124,7 @@ export function FloatingWidget({
         lifted && "z-50",
         className,
       )}
-      style={{ touchAction: "none" }}
+      style={{ x, y, touchAction: "none", maxWidth: "calc(100% - 24px)" }}
     >
       {children}
     </motion.div>

@@ -1,0 +1,132 @@
+/* 밝은 2.5D 아케이드: 원화·스프라이트·실제 게임 UI를 독립적으로 합성합니다. */
+.game-fullscreen { background:radial-gradient(ellipse at 50% 0%,#e1f3ef,#e8eef5 70%); color-scheme:light; color:#244355; }
+.game-topline { background:#fffdf1e6; color:#526b73; border-bottom:1px solid #d5e1db; }
+.game-topline .sound-button { color:#386c75; border-color:#c3d9d3; background:#fff; }
+.game-exit { color:#526b73; }.game-exit:hover { color:#183e4e; }
+.game-stage { max-width:1280px; padding:22px 32px 42px; }
+.arcade-art-game {
+  --os-ink:#244355; --os-ink-dim:#55707c; --os-accent:#1b7e73; --os-accent-soft:#368779;
+  --os-glass:#ffffffd6; --os-glass-strong:#fffef5ed; --os-border:#bdcec982;
+  color:#244355; color-scheme:light; border:1px solid #ffffffd9;
+  border-radius:28px; box-shadow:0 24px 65px #31596922,inset 0 1px 0 #fff;
+}
+.word-action { background:#f5faf8; padding:20px; }
+.word-hud { background:#fffdf5; border:1px solid #dfebe2; border-radius:18px; padding:15px 20px; box-shadow:0 5px 20px #194a5210; }
+.word-hud h2 { color:#244355; font-size:27px; }.word-hud small { color:#6c8686; }.word-hud span { color:#52737b; }.word-hud strong { color:#176b70; }
+.jump-hearts>span { color:#e87077; }.stamina meter { accent-color:#22a482; }
+.word-question { margin:12px 0; padding-block:13px; background:#e7f3ef; border-radius:16px; border:1px solid #d5e7dd; }
+.word-question>span { color:#567c7b; }.word-question strong { color:#234c57; }.word-question button { right:10px; border-color:#bdd7ce; background:#fffdf4; color:#38646a; }
+.word-world { height:450px; border-radius:20px; border:2px solid #fff7; box-shadow:0 8px 22px #315b6525; }
+.art-landscape { position:absolute; inset:0; background-position:center; background-size:cover; background-repeat:no-repeat; pointer-events:none; }
+.cliff-landscape { background-image:url('/arcade/cliff-world-v1.webp'); transition:transform .08s linear; transform-origin:50% 55%; }
+.cliff-haze { position:absolute; inset:55% -10% 0; background:linear-gradient(90deg,#ebffff66,transparent 25% 75%,#ebffff66); opacity:.45; animation:art-haze 12s ease-in-out infinite alternate; pointer-events:none; }
+.cliff-speed-lines { opacity:.14!important; mix-blend-mode:soft-light; }
+.cliff-runner { width:150px; top:68%; filter:drop-shadow(1px 7px 3px #704c3b45); }
+.runner-sprite { display:block; width:100%; aspect-ratio:1; background-position:0 0; background-size:200% 200%; background-repeat:no-repeat; }
+.runner-back { background-image:url('/arcade/runner-back-v1.webp'); }.runner-side { background-image:url('/arcade/runner-side-v1.webp'); }
+.runner-sprite.is-running { animation:art-run-cycle .5s step-end infinite; }.runner-sprite.is-airborne { background-position:100% 0; animation:none; }
+.fork-sign { top:22%; width:25%; min-height:70px; border:3px solid #ffe8b8; border-radius:15px; background:linear-gradient(130deg,#c2864f,#81512f); box-shadow:inset 0 3px 0 #f5bf819c,inset 0 -5px 0 #6241259c,0 8px 0 #573f2e,0 12px 23px #352d2e45; color:#fffcdf; text-shadow:0 2px 1px #4a2a1b80; }
+.fork-sign:after { content:""; position:absolute; width:9px; height:25px; top:100%; left:50%; background:linear-gradient(90deg,#65432d,#ab7a4a); z-index:-1; }
+.fork-0 { left:9%; rotate:-3deg; }.fork-1 { right:9%; rotate:3deg; }.fork-sign.chosen { background:linear-gradient(135deg,#d7ffd8,#70dca9); color:#185b4d; border-color:#fff4b4; text-shadow:0 1px 0 #fff8; box-shadow:inset 0 -5px 0 #46a78766,0 6px 0 #348773,0 0 25px #e3ffc2a3; }
+.trail-event { top:14px; border:1px solid #ffffffb3; background:#fff7e5ed; color:#785835; box-shadow:0 4px 12px #6e584625; }.supply-event { color:#187b58; }.rock-warning { background:#ffe3ba; color:#963d1f; border-color:#ffb66f; }
+.trail-rock { width:46px; height:38px; background:linear-gradient(135deg,#c1a086,#88684d 55%,#62574d); clip-path:polygon(20% 5%,68% 0,100% 45%,85% 100%,0 88%,2% 37%); box-shadow:inset 6px 5px 0 #ead0a2; filter:drop-shadow(0 6px 3px #423e4855); z-index:1; }
+.trail-rock>span { display:block; height:100%; background:linear-gradient(50deg,transparent 45%,#dfc1a870 46% 50%,transparent 51%); }
+.trail-pickup { display:grid; place-items:center; width:36px; height:40px; border:2px solid #fff5c5; border-radius:10px; background:linear-gradient(135deg,#b4f5c6,#31a37b); box-shadow:inset 0 -5px 0 #248467,0 0 24px #f7ffc1; color:white; text-shadow:0 2px 1px #1d7253; font-size:22px; z-index:1; }
+.word-feedback { color:#275d55; border:2px solid #fff6c0; background:#fffff0f2; box-shadow:0 7px 22px #243f4940; bottom:7%; }.phase-fall .word-feedback,.bad-landing .word-feedback { color:#963f38; background:#fff0e6f2; border-color:#ffd1b0; }
+.word-pause { color:#345d64; background:#fffdf1d9; }
+.word-time { background:#d8e6e1; height:6px; }.word-time>span { background:linear-gradient(90deg,#56bf9e,#f5b459); }
+.word-touch button { color:#28575f; border:1px solid #bdd8ce; background:linear-gradient(#fffff8,#e3f1eb); box-shadow:0 3px 0 #c4d9d0; font-weight:700; }.word-touch button:hover:not(:disabled) { background:#d0f3df; }
+.word-note,.subway-guide { color:#607e84; }
+.word-intro { position:relative; isolation:isolate; border-radius:20px; overflow:hidden; margin-top:16px; padding:38px 30px; min-height:470px; gap:17px; background:linear-gradient(90deg,#fffcf2ed,#fffcf2b5); }
+.cliff-game:has(.word-intro) { background:linear-gradient(#f0f8f3ba,#fff7eccc),url('/arcade/cliff-world-v1.webp') center/cover; }
+.subway-game:has(.word-intro) { background:linear-gradient(#e8faf5a8,#fff7ebbb),url('/arcade/subway-world-v1.webp') center/cover; }
+.word-game-badge { display:grid; place-items:center; width:90px; height:90px; border:2px solid #fffbd6; border-radius:24px; background:linear-gradient(145deg,#ffdb89,#e99d50); color:#835130; font-size:66px; box-shadow:0 8px 0 #c58a55,0 14px 30px #a67a3240,inset 0 4px 6px #ffffffe6; text-shadow:0 2px 1px #fff8; }
+.subway-game .word-game-badge { color:#28736b; background:linear-gradient(145deg,#b5f4d3,#65c3b8); box-shadow:0 8px 0 #489f94,0 14px 30px #24876c40,inset 0 4px 6px #ffffffe6; }
+.word-primary { border:2px solid #ffffdb; box-shadow:0 5px 0 #d69954,0 10px 20px #c38b3240,inset 0 2px 3px #fff8; }.word-primary:hover { translate:0 -2px; }.subway-game .word-primary { background:linear-gradient(#b8f3d6,#6ecbbe); color:#245751; box-shadow:0 5px 0 #519e91,0 10px 20px #2c907340; }
+.subway-world { background:#a0dced; }
+.subway-city { background-image:url('/arcade/subway-world-v1.webp'); inset:0 -4%; animation:art-city-pan 18s ease-in-out infinite alternate; }
+.subway-air { position:absolute; inset:0; background:linear-gradient(#e5f9ff05,#e5f9ff22 65%,transparent); pointer-events:none; }
+.subway-rails { opacity:.6; top:88%; border-color:#94b8b0; }
+.subway-train { top:82%; height:30%; background:linear-gradient(180deg,#d1e8e3 0 10%,#f3f6e8 10% 19%,#529894 20% 23%,#e5eee6 24% 75%,#a8c2bc 76%); border:2px solid #a1b9b5; border-radius:25px; box-shadow:0 -4px 0 #f5fff7,0 12px 15px #1e5c6959,inset 0 -8px 0 #779f99; gap:26px; padding-top:20px; }
+.subway-train>span { border:3px solid #6e9591; background:linear-gradient(135deg,#6099ad,#b0d4d6 50%,#547e9d); box-shadow:inset 0 3px 8px #2f646878,0 1px 0 #fff; height:52%; border-radius:11px; }
+.subway-home-platform { height:12px; background:linear-gradient(#fff3b4,#e2bd66); box-shadow:0 5px 0 #7f9f98,0 7px 9px #24586640; }
+.subway-runner { --runner-size:108px; width:var(--runner-size); left:12%; filter:drop-shadow(1px 5px 2px #253d4350); }
+.subway-runner.is-jumping { animation-name:art-subway-leap; }.phase-land:not(.bad-landing) .subway-runner { left:61%; }
+.word-platform { right:6%; width:28%; height:62px; overflow:visible; border:2px solid #fff1b0; background:linear-gradient(#f8fff3,#d5f1dc); box-shadow:inset 0 4px 0 #fff,0 6px 0 #62a497,0 11px 16px #284b554d; border-radius:14px; color:#285e60; }
+.word-platform:after { content:""; position:absolute; left:8%; right:8%; height:10px; top:calc(100% + 5px); border-radius:0 0 12px 12px; background:linear-gradient(90deg,#4b837e,#90bfb0,#4b837e); z-index:-1; }
+.platform-0 { top:30%; }.platform-1 { top:50%; }.platform-2 { top:70%; }
+.word-platform small { color:#658a7c; top:5px; left:8px; }.word-platform strong { color:#245c64; }.word-platform>span { background:#efbb5f; border-radius:10px; bottom:3px; max-width:96%; left:2%; }
+.platform-picked { border-color:#ffd57e; background:linear-gradient(#fff7ce,#bcecc6); box-shadow:0 6px 0 #57917c,0 0 26px #fff3b8d9; }.platform-broken { opacity:.25; transform:translateY(13px) rotate(12deg); }
+.subway-station { background:#ffffede0; color:#3c7879; padding:7px 12px; border-radius:20px; border:1px solid #fff; box-shadow:0 3px 10px #3e697325; }
+.subway-speed { opacity:.15; }
+.arcade-particles { position:absolute; inset:0; pointer-events:none; z-index:3; overflow:hidden; border-radius:inherit; }
+.arcade-particles>i { position:absolute; width:10px; height:10px; background:#fff3b4; clip-path:polygon(50% 0,63% 35%,100% 50%,63% 65%,50% 100%,37% 65%,0 50%,37% 35%); opacity:0; animation:art-spark .65s ease-out both; box-shadow:0 0 12px #fff; }
+.arcade-particles>i:nth-child(3n) { background:#8ee4b4; width:15px; height:15px; }.particles-miss>i { background:#f19b71; clip-path:polygon(0 0,100% 0,80% 100%,20% 80%); }.particles-ambient>i { animation:art-dust 7s ease-in-out infinite alternate; opacity:.5; width:5px; height:5px; }
+
+/* 옐로캡: 기존 조작·판정·저장은 그대로 두고 도로와 차량만 새로 합성합니다. */
+.cab-game { background:#f4f8ed; }.cab-game>div { isolation:isolate; }
+.cab-illustration { background:linear-gradient(#f8fff057,#e5f4ef73),url('/arcade/cab-world-v1.webp') center/cover; opacity:1; z-index:-1; }
+.cab-game>div>div:first-of-type:not(.cab-illustration) { color:#2a5c61; }
+.cab-intro,.cab-result { margin:20px; border-radius:22px; background:#fffdf2ed; box-shadow:0 8px 25px #30545e20; }
+.cab-intro h3 { color:#2b5662; }.cab-intro>button { background:linear-gradient(#ffe592,#f3bd52); border:2px solid #fff4b1; box-shadow:0 5px 0 #cc9650,0 9px 22px #bba43b33; }
+.cab-play { background:#f8fcf3ed; }.cab-play>div:first-child { padding:4px 0 8px; }
+.cab-race-world { position:relative; isolation:isolate; height:370px; border:2px solid #fff; border-radius:20px; overflow:hidden; box-shadow:0 7px 22px #234c6229; }
+.cab-city { background-image:url('/arcade/cab-world-v1.webp'); }
+.cab-road-flow { position:absolute; inset:40% 5% 0; background:repeating-linear-gradient(180deg,transparent 0 45px,#fff7 46px 54px,transparent 55px 90px) 33% 0/3px 100% repeat-y,repeating-linear-gradient(180deg,transparent 0 45px,#fff7 46px 54px,transparent 55px 90px) 66% 0/3px 100% repeat-y; transform:perspective(350px) rotateX(37deg); transform-origin:50% 100%; animation:art-road-scroll .5s linear infinite; opacity:.5; pointer-events:none; }
+.cab-lanes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); position:absolute; inset:0; }
+.cab-road-lane { position:relative; min-width:0; background:transparent; transition:background .2s; }
+.cab-road-lane.lane-selected { background:linear-gradient(transparent 30%,#fff2ae45); }.cab-road-lane.lane-correct { background:linear-gradient(transparent 25%,#76e5ac66); }.cab-road-lane.lane-wrong { background:linear-gradient(transparent 25%,#f49b7f66); }
+.cab-word-sign { position:absolute; top:14%; left:5%; right:5%; padding:12px 5px; background:linear-gradient(#fffff4,#e0f0df); border:2px solid #fff4bf; border-radius:14px; color:#2e676c; box-shadow:0 5px 0 #749c8d,0 9px 18px #244b4e44; }
+.cab-word-sign small { display:block; font-size:9px; opacity:.65; margin-bottom:3px; }.cab-word-sign strong { font-size:clamp(11px,1.8vw,19px); overflow-wrap:anywhere; }
+.lane-selected .cab-word-sign { border-color:#ffe37e; background:linear-gradient(#fff5bb,#f1d183); color:#705021; box-shadow:0 5px 0 #c09a4d,0 0 30px #fff6c2a0; }
+.cab-hud-title { font-size:20px; font-weight:800; margin-right:auto; color:#285c66; }
+.cab-player { position:absolute; bottom:9%; width:150px; translate:-50% 0; pointer-events:none; z-index:2; }
+.cab-car-sprite { display:block; width:100%; aspect-ratio:480/399; background:url('/arcade/taxi-v1.webp') center/contain no-repeat; filter:drop-shadow(0 4px 3px #34464a66); animation:art-cab-bob .18s ease-in-out infinite alternate; }
+.cab-shadow { position:absolute; bottom:2%; left:12%; width:76%; height:15%; background:#243d514d; border-radius:50%; filter:blur(5px); }
+.cab-exhaust { position:absolute; bottom:-10px; left:35%; width:30%; height:12px; border-radius:50%; background:#fff5; filter:blur(3px); animation:art-cab-bob .3s ease-in-out infinite alternate; }
+.cab-fever-glow { position:absolute; inset:0; pointer-events:none; box-shadow:inset 0 0 45px #ffe994bb; border:3px solid #fff0a3; border-radius:20px; }.cab-fever .cab-road-flow { animation-duration:.28s; }.cab-play .text-\[\#7ee08a\] { color:#277d59; }.cab-play .text-\[\#ffb4b0\] { color:#a74e3a; }
+
+/* 메모리 카드: 시계 없는 자가 복습 규칙을 유지하는 도서관 카드 덱. */
+.flashcard-game { position:relative; isolation:isolate; overflow:hidden; background:#e9f3e6; color:#315663; min-height:610px; }
+.memory-library { background-image:url('/arcade/memory-world-v1.webp'); z-index:-2; margin:0!important; }
+.memory-glow { position:absolute; inset:0; background:linear-gradient(#fff5e71a,#fff5e722); z-index:-1; pointer-events:none; margin:0!important; }
+.flashcard-game>header { position:relative; max-width:720px; margin:0 auto 20px; padding:18px 25px; border:1px solid #fff8; border-radius:20px; text-align:center; background:#ffffefe8; box-shadow:0 6px 20px #52482a1a; }
+.flashcard-game>header h2 { font-size:27px; color:#2c5e63; }.flashcard-game>header p { color:#617b79; }
+.flashcard-game>div:not(.art-landscape):not(.memory-glow) { position:relative; max-width:720px; margin:0 auto; padding:24px; border-radius:22px; border:1px solid #fffff1; background:#fffdf1ed; box-shadow:0 12px 35px #594c3126; }
+.flashcard-game .text-white\/60,.flashcard-game .text-white\/70,.flashcard-game .text-white\/50 { color:#6c817d; }
+.flashcard-game button:not(.memory-flashcard) { border-color:#bed8ca; background:linear-gradient(#fbfff2,#dfedde); color:#326b61; box-shadow:0 3px 0 #bfcec1; }
+.flashcard-game button:not(.memory-flashcard):hover { background:#cee9d9; }
+.flashcard-game li { background:#edf4e9; }
+.flashcard-preview { width:150px; height:140px; margin:10px auto 30px; perspective:600px; }
+.flashcard-preview>i { position:absolute; left:24px; top:6px; width:100px; height:130px; border:3px solid #fff3b2; border-radius:15px; background:linear-gradient(135deg,#8ecfc0,#397f81); box-shadow:0 7px 12px #1c5b6340,inset 0 0 0 6px #ffffff38; rotate:-14deg; }
+.flashcard-preview>i:nth-child(2) { rotate:0deg; background:linear-gradient(135deg,#ffe9ae,#e6be6e); }.flashcard-preview>i:nth-child(3) { rotate:14deg; background:linear-gradient(135deg,#e3eee0,#83bca8); }.flashcard-preview>span { position:relative; z-index:2; left:14px; top:13px; color:#fff6b4; font-size:53px; text-shadow:0 3px 0 #769b7b; }
+.memory-flashcard { position:relative; min-height:285px; padding:22px; border:3px solid #e5ca89; border-radius:20px; background:linear-gradient(135deg,#fffdf0,#f8eed0); box-shadow:0 5px 0 #d9cda6,0 16px 22px #355c4826,inset 0 0 0 7px #fffefa; color:#355d65; animation:art-card-front .35s ease-out; }
+.memory-flashcard:before,.memory-flashcard:after { content:"✦"; position:absolute; top:12px; left:16px; color:#c6a55e; font-size:18px; }.memory-flashcard:after { inset:auto 16px 12px auto; rotate:180deg; }
+.memory-flashcard small { color:#7b8e77; }.memory-flashcard>span { color:#728478; }.memory-flashcard strong { font-size:clamp(23px,4vw,42px); }
+.memory-flashcard.card-back { background:linear-gradient(135deg,#e5f5de,#c9e5d3); border-color:#89b8a2; box-shadow:0 5px 0 #9ebfa6,0 16px 22px #355c4826,inset 0 0 0 7px #fafff3; animation:art-card-back .35s ease-out; }
+
+@keyframes art-run-cycle { 0% { background-position:0 0; } 25% { background-position:100% 0; } 50% { background-position:0 100%; } 75% { background-position:100% 100%; } }
+@keyframes art-haze { to { translate:12px -10px; opacity:.7; } }
+@keyframes art-city-pan { from { translate:-1.8% 0; } to { translate:1.8% 0; } }
+@keyframes art-subway-leap { 0% { left:12%; bottom:24%; rotate:0deg; } 50% { left:38%; bottom:min(calc(var(--landing-y) + 14%),calc(100% - var(--runner-size))); rotate:-9deg; } 100% { left:61%; bottom:var(--landing-y); rotate:0deg; } }
+@keyframes art-spark { 0% { opacity:0; transform:scale(.1) translateY(20px); } 25% { opacity:1; } 100% { opacity:0; transform:scale(1.3) translateY(-70px); } }
+@keyframes art-dust { 0%,100% { opacity:0; translate:0 5px; } 50% { opacity:.65; translate:5px -15px; } }
+@keyframes art-road-scroll { to { background-position:33% 90px,66% 90px; } }
+@keyframes art-cab-bob { to { translate:0 2px; } }
+@keyframes art-card-front { from { transform:perspective(700px) rotateY(-12deg) translateY(5px); opacity:.6; } to { transform:perspective(700px) rotateY(0deg); opacity:1; } }
+@keyframes art-card-back { from { transform:perspective(700px) rotateY(12deg); opacity:.6; } to { transform:perspective(700px) rotateY(0deg); opacity:1; } }
+@media(max-width:700px) {
+  .game-stage { padding:12px 12px 28px; }.arcade-art-game { border-radius:20px; }.word-action { padding:10px; }.word-hud { padding:12px; gap:8px; }.word-hud h2 { font-size:17px; }.word-hud strong { font-size:18px; }
+  .word-world { height:clamp(230px,calc(100dvh - 285px),420px); }.word-question { padding:12px 70px 12px 12px; margin:9px 0; }.word-question strong { font-size:20px; }
+  .cliff-landscape { background-size:100% 100%; }.cliff-runner { width:105px; top:68%; }.fork-sign { width:32%; min-height:58px; top:22%; padding:10px 3px; font-size:11px; border-radius:11px; }.fork-0 { left:3%; }.fork-1 { right:3%; }.fork-sign>span { font-size:17px; }.trail-rock { width:30px; height:28px; }.trail-pickup { width:27px; height:30px; font-size:17px; }
+  .subway-runner { --runner-size:72px; }.word-platform { width:30%; right:4%; height:43px; border-radius:10px; }.word-platform strong { font-size:10px; margin-top:5px; }.word-platform small { font-size:8px; top:2px; left:5px; }.word-platform:after { height:7px; }.subway-station { font-size:8px; padding:5px 8px; }.subway-train { gap:15px; padding-top:13px; }
+  .word-intro { padding:26px 15px; min-height:390px; gap:15px; }.word-game-badge { width:68px; height:68px; font-size:48px; border-radius:20px; }.word-intro h3 { font-size:21px; }.word-intro p { font-size:11px; }
+  .cab-intro,.cab-result { margin:12px; padding:25px 15px; }.cab-race-world { height:clamp(230px,calc(100dvh - 270px),370px); border-radius:15px; }.cab-player { width:80px; bottom:8%; }.cab-word-sign { top:13%; padding:10px 2px; border-radius:10px; }.cab-word-sign strong { font-size:11px; }.cab-word-sign small { font-size:8px; }.cab-play { padding:12px 10px; }.cab-play>div:first-child { padding:0; }.cab-play .text-3xl { font-size:25px; }.cab-play>div:last-child { font-size:11px; }
+  .cab-hud-title { font-size:15px; }
+  .flashcard-game { padding:14px!important; min-height:580px; }.flashcard-game>header { padding:14px; }.flashcard-game>header h2 { font-size:21px; }.flashcard-game>header p { font-size:11px; }.flashcard-game>div:not(.art-landscape):not(.memory-glow) { padding:17px 13px; }.memory-flashcard { min-height:255px; gap:20px; padding:18px 12px; }.flashcard-game .space-y-5>p { font-size:11px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .arcade-art-game *,.arcade-art-game *::before,.arcade-art-game *::after { animation:none!important; transition:none!important; }
+  .cliff-landscape { transform:none!important; }
+  .subway-runner.is-jumping { left:61%; bottom:var(--landing-y); }
+}

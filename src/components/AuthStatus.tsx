@@ -56,7 +56,7 @@ export function AuthStatus() {
   return (
     <div className="flex items-center gap-2">
       <span
-        className="flex max-w-[11rem] items-center gap-1.5 text-xs text-white/50"
+        className="flex max-w-[6rem] items-center gap-1.5 text-xs text-white/50 lg:max-w-[11rem]"
         title={state.email ?? undefined}
       >
         <UserRound className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden />

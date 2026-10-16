@@ -1,8 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
+
+const EmbeddedContext = createContext(false);
+
+export function EmbeddedPanels({ children }: { children: ReactNode }) {
+  return <EmbeddedContext.Provider value={true}>{children}</EmbeddedContext.Provider>;
+}
 
 type GlassWindowProps = {
   /** 타이틀바에 표시할 창 제목 */
@@ -15,7 +21,7 @@ type GlassWindowProps = {
   delay?: number;
 };
 
-/** macOS 창을 닮은 유리 패널. 앱의 모든 섹션이 이 창 안에 들어갑니다. */
+/** 학습 내용과 도구를 담는 패널입니다. */
 export function GlassWindow({
   title,
   toolbar,
@@ -23,6 +29,15 @@ export function GlassWindow({
   className,
   delay = 0,
 }: GlassWindowProps) {
+  const embedded = useContext(EmbeddedContext);
+  if (embedded) {
+    return (
+      <section className={cn("space-y-4", className)}>
+        <h3 className="border-b border-white/10 pb-3 text-sm font-medium text-white/70">{title}</h3>
+        {children}
+      </section>
+    );
+  }
   return (
     <motion.section
       initial={{ opacity: 0, y: 18, scale: 0.985 }}
@@ -33,12 +48,9 @@ export function GlassWindow({
         className,
       )}
     >
-      {/* 타이틀바: 신호등 버튼 3개 + 제목 */}
+      {/* 학습 영역 제목과 도구 */}
       <header className="flex items-center gap-2 border-b border-white/10 bg-white/5 px-4 py-3">
-        <span aria-hidden className="h-3 w-3 rounded-full bg-[#ff5f57]" />
-        <span aria-hidden className="h-3 w-3 rounded-full bg-[#febc2e]" />
-        <span aria-hidden className="h-3 w-3 rounded-full bg-[#28c840]" />
-        <h2 className="ml-3 text-sm font-medium tracking-tight text-white/70">
+        <h2 className="text-sm font-medium tracking-tight text-white/70">
           {title}
         </h2>
         {toolbar ? <div className="ml-auto">{toolbar}</div> : null}

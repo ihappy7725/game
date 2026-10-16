@@ -1,12 +1,11 @@
 "use client";
 
 import { useCallback, useRef, useState, type ReactNode } from "react";
-import { AnimatePresence } from "framer-motion";
 import { SceneBackdrop } from "@/components/SceneBackdrop";
 import { DesktopWindow } from "@/components/os/DesktopWindow";
 import { Dock, DOCK_APPS } from "@/components/os/Dock";
 import { FloatingWidget } from "@/components/os/FloatingWidget";
-import { MenuBar, type TierId } from "@/components/os/MenuBar";
+import { MenuBar } from "@/components/os/MenuBar";
 import { PhotoSticker } from "@/components/os/PhotoSticker";
 import { QuoteCardGentleReminder } from "@/components/os/QuoteCardGentleReminder";
 import { QuoteCardWinLearn } from "@/components/os/QuoteCardWinLearn";
@@ -30,11 +29,9 @@ type OpenWindow = {
 
 type DesktopProps = {
   apps: Partial<Record<string, AppDefinition>>;
-  tier?: TierId;
-  coins?: number;
 };
 
-export function Desktop({ apps, tier = "manhattan", coins = 1500 }: DesktopProps) {
+export function Desktop({ apps }: DesktopProps) {
   const { theme } = useOsTheme();
   const surfaceRef = useRef<HTMLDivElement>(null);
   const [windows, setWindows] = useState<OpenWindow[]>([]);
@@ -103,10 +100,10 @@ export function Desktop({ apps, tier = "manhattan", coins = 1500 }: DesktopProps
     <div className="relative h-dvh w-full overflow-hidden" style={{ color: "var(--os-ink)" }}>
       <SceneBackdrop scene={theme.desktop} />
 
-      <MenuBar tier={tier} coins={coins} activeApp={activeAppLabel} />
+      <MenuBar activeApp={activeAppLabel} />
 
       {/* 바탕화면: 위젯과 창이 이 영역 안에서만 움직인다 */}
-      <div ref={surfaceRef} className="absolute inset-x-0 top-9 bottom-0">
+      <main ref={surfaceRef} aria-label="학습 바탕화면" className="absolute inset-x-0 top-28 bottom-28 sm:top-9">
         {/* 드래그 가능한 플로팅 위젯 4종 */}
         <FloatingWidget
           id="quote-win-learn"
@@ -157,8 +154,7 @@ export function Desktop({ apps, tier = "manhattan", coins = 1500 }: DesktopProps
         </FloatingWidget>
 
         {/* 앱 창 */}
-        <AnimatePresence>
-          {visible.map((win) => {
+          {windows.map((win) => {
             const app = apps[win.appId];
             if (!app) return null;
             return (
@@ -167,6 +163,7 @@ export function Desktop({ apps, tier = "manhattan", coins = 1500 }: DesktopProps
                 title={app.title}
                 width={app.width}
                 zIndex={win.zIndex}
+                minimized={win.minimized}
                 initial={win.offset}
                 boundsRef={surfaceRef}
                 onFocus={() => focus(win.appId)}
@@ -177,8 +174,7 @@ export function Desktop({ apps, tier = "manhattan", coins = 1500 }: DesktopProps
               </DesktopWindow>
             );
           })}
-        </AnimatePresence>
-      </div>
+      </main>
 
       <Dock openApps={windows.map((w) => w.appId)} onOpen={open} />
     </div>

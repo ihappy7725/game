@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { motion } from "framer-motion";
 import { useOsTheme } from "@/lib/os-theme";
+import { AuthStatus } from "@/components/AuthStatus";
+import { BackendStatus } from "@/components/BackendStatus";
 import { cn } from "@/lib/cn";
+import { GameStatus } from "./GameStatus";
 
 /** 미국 정복 5단계 티어 */
 export const TIERS = [
@@ -17,41 +20,28 @@ export type TierId = (typeof TIERS)[number]["id"];
 
 /** 뉴욕 현지 시간. 서버와 클라이언트의 시각이 다를 수밖에 없으므로
  *  마운트 전에는 자리만 잡아 두고 하이드레이션 불일치를 피한다. */
+function easternTime() {
+  return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "America/New_York", weekday: "short", hour: "numeric", minute: "2-digit",
+  }).format(new Date());
+}
+function subscribeClock(update: () => void) {
+  const timer = window.setInterval(update, 1000);
+  return () => window.clearInterval(timer);
+}
 function useEasternTime() {
-  const [time, setTime] = useState<string | null>(null);
-
-  useEffect(() => {
-    const format = () =>
-      new Intl.DateTimeFormat("en-US", {
-        timeZone: "America/New_York",
-        weekday: "short",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }).format(new Date());
-
-    setTime(format());
-    const timer = window.setInterval(() => setTime(format()), 15_000);
-    return () => window.clearInterval(timer);
-  }, []);
-
-  return time;
+  return useSyncExternalStore(subscribeClock, easternTime, () => "—");
 }
 
-type MenuBarProps = {
-  tier: TierId;
-  coins: number;
-  activeApp: string | null;
-};
+type MenuBarProps = { activeApp: string | null };
 
-export function MenuBar({ tier, coins, activeApp }: MenuBarProps) {
+export function MenuBar({ activeApp }: MenuBarProps) {
   const { mode, toggle } = useOsTheme();
   const easternTime = useEasternTime();
-  const currentTier = TIERS.find((t) => t.id === tier) ?? TIERS[0];
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-100 flex h-9 items-center gap-4 px-3 text-[13px] backdrop-blur-2xl"
+      className="fixed inset-x-0 top-0 z-100 grid h-28 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1 px-3 py-2 text-[13px] backdrop-blur-2xl sm:flex sm:h-9 sm:py-0"
       style={{
         background: "var(--os-glass-strong)",
         borderBottom: "1px solid var(--os-border)",
@@ -64,45 +54,34 @@ export function MenuBar({ tier, coins, activeApp }: MenuBarProps) {
       </span>
 
       {activeApp ? (
-        <nav className="hidden items-center gap-4 sm:flex" style={{ color: "var(--os-ink-dim)" }}>
+        <nav className="hidden items-center gap-4 xl:flex" style={{ color: "var(--os-ink-dim)" }}>
           <span className="font-medium" style={{ color: "var(--os-ink)" }}>
             {activeApp}
           </span>
-          <span>파일</span>
-          <span>편집</span>
-          <span>보기</span>
         </nav>
       ) : null}
 
-      {/* 우측: 티어 · 코인 · 뉴욕 시간 · 모드 전환 */}
-      <div className="ml-auto flex items-center gap-3">
-        <span
-          className="hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium sm:flex"
-          style={{ background: "var(--os-glass)", border: "1px solid var(--os-border)" }}
-          title={`현재 티어: ${currentTier.name}`}
-        >
-          <span aria-hidden>{currentTier.emoji}</span>
-          {currentTier.name}
-        </span>
-
-        <span className="flex items-center gap-1 font-mono text-[12px] tabular-nums">
-          <span aria-hidden>💵</span>${coins.toLocaleString("en-US")}
-        </span>
+      <GameStatus />
+      <div className="col-span-2 row-start-2 flex min-w-0 items-center justify-between gap-2 sm:order-1 sm:ml-auto sm:justify-end">
+        <BackendStatus />
+        <AuthStatus />
 
         <span
-          className="hidden font-mono text-[12px] tabular-nums md:inline"
+          className="hidden font-mono text-[12px] tabular-nums xl:inline"
           style={{ color: "var(--os-ink-dim)" }}
           suppressHydrationWarning
         >
-          {easternTime ?? "—"} EST
+          {easternTime} 뉴욕
         </span>
 
-        {/* 모드 전환 스위치 */}
+      </div>
+
+        {/* 작은 화면에서는 첫째 줄, 연결·인증 상태는 둘째 줄에 둡니다. */}
         <button
           type="button"
           onClick={toggle}
           aria-label={`${mode === "study" ? "NYC Arcade" : "Study OS"} 모드로 전환`}
-          className="relative flex h-6 w-[136px] items-center rounded-full px-1 text-[11px] font-medium"
+          className="relative ml-auto flex h-6 w-[136px] shrink-0 items-center rounded-full px-1 text-[11px] font-medium sm:order-2 sm:ml-0"
           style={{ background: "var(--os-glass)", border: "1px solid var(--os-border)" }}
         >
           <motion.span
@@ -122,7 +101,6 @@ export function MenuBar({ tier, coins, activeApp }: MenuBarProps) {
             🕹️ Arcade
           </span>
         </button>
-      </div>
     </header>
   );
 }

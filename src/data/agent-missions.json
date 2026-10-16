@@ -1,0 +1,44 @@
+[
+  {
+    "id": "campus-route",
+    "title": "접선 동선 복원",
+    "brief": "연락책이 방문할 장소 세 곳을 들은 순서대로 선택하세요.",
+    "transcript": "Agent, listen carefully to the contact's route. She will visit the library first to collect a research paper. Next, she will meet a student at the campus cafe. Her final stop will be the science museum, where she will leave the package. The theater is closed today. Select the three stops in the order she will visit them.",
+    "explanation": "first가 도서관, next가 캠퍼스 카페, final stop이 과학 박물관을 가리킵니다. 극장은 방문하지 않습니다.",
+    "choices": [
+      { "id": "cafe", "label": "Campus cafe" },
+      { "id": "theater", "label": "Theater" },
+      { "id": "museum", "label": "Science museum" },
+      { "id": "library", "label": "Library" }
+    ],
+    "order": ["library", "cafe", "museum"]
+  },
+  {
+    "id": "folder-sequence",
+    "title": "기밀 서류 전달",
+    "brief": "서류 세 개를 전달 지시 순서대로 선택하세요.",
+    "transcript": "The files must be delivered in a specific order. Begin with the green folder, which contains the laboratory report. After that, take the blue folder to the archive. The red folder contains the access code and must be delivered last. Leave the yellow folder on the desk. Remember, the order is based on delivery time, not on how important each folder looks.",
+    "explanation": "begin with의 초록 서류, after that의 파랑 서류, last의 빨강 서류 순서입니다. 노랑 서류는 책상에 둡니다.",
+    "choices": [
+      { "id": "red", "label": "Red folder" },
+      { "id": "green", "label": "Green folder" },
+      { "id": "yellow", "label": "Yellow folder" },
+      { "id": "blue", "label": "Blue folder" }
+    ],
+    "order": ["green", "blue", "red"]
+  },
+  {
+    "id": "shutdown-protocol",
+    "title": "장치 해제 절차",
+    "brief": "관제 담당자가 지시한 장치 해제 순서를 선택하세요.",
+    "transcript": "You have reached the control room. Do not open the window. To disable the device safely, first switch off the main power. Once the power is off, close the water valve beside the entrance. Only after both steps are complete should you enter the access code. Entering the code too early will restart the device. Follow these three instructions in exactly that order.",
+    "explanation": "먼저 전원을 끄고, 전원이 꺼지면 밸브를 잠근 뒤, 두 단계가 끝난 후 코드를 입력합니다. 창문은 열지 않습니다.",
+    "choices": [
+      { "id": "code", "label": "Enter access code" },
+      { "id": "window", "label": "Open window" },
+      { "id": "power", "label": "Switch off power" },
+      { "id": "valve", "label": "Close water valve" }
+    ],
+    "order": ["power", "valve", "code"]
+  }
+]

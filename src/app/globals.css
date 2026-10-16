@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@import "./hub.css";
+@import "./arcade-art.css";
+@import "./game-experience.css";
 
 /* ==========================================================================
    디자인 토큰 - "뉴욕의 밤" 팔레트 + macOS 유리창 질감

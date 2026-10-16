@@ -1,107 +1,107 @@
-# 프론트엔드 구성 메모 (Next.js + Tailwind v4 + Framer Motion)
+# 프론트엔드 구성과 실행
 
-프로젝트는 이미 생성되어 있습니다: **`C:\Users\user\frontend`** (백엔드와 나란히).
-이 문서는 "무엇이 왜 그렇게 설치되어 있는지"와 실행 방법을 담은 참고 메모입니다.
+최종 갱신: 2026-10-16. 현재 작업 폴더는 `C:\Users\user\Desktop\game`입니다. 자세한 구현·검증 상태는 `HANDOFF.md`를 참고하세요.
 
-## 실제 설치된 버전
+## 설치 구성
 
-| 항목 | 버전 |
-| --- | --- |
-| Node / npm | v24.20.0 / 11.19.0 |
-| Next.js | 16.4.2 (App Router, Turbopack 기본) |
-| React | 19.3.0 |
-| Tailwind CSS | v4 (설정 파일 없이 CSS에서 토큰 정의) |
-| Framer Motion | 14.3.0 |
-| 그 외 | @supabase/supabase-js, @supabase/ssr, lucide-react, clsx, tailwind-merge |
+Next.js 16.4.2 / React 19.3 / Tailwind v4 / Framer Motion 14.3 / Supabase SSR를 사용합니다. Tailwind 토큰과 유틸리티는 `src/app/globals.css`, OS 테마 변수는 `src/lib/os-theme.tsx`에 있습니다.
 
-> Tailwind v4라서 `tailwind.config.js`가 없습니다. 색·반경·그림자 토큰은
-> `src/app/globals.css` 의 `@theme` 블록에, 커스텀 유틸리티는 `@utility` 블록에 정의합니다.
-
-재생성이 필요할 때 쓴 명령은 다음과 같습니다.
-
-```powershell
-cd C:\Users\user
-npx create-next-app@latest frontend --typescript --tailwind --eslint --app --src-dir --turbopack --import-alias "@/*" --use-npm
-cd C:\Users\user\frontend
-npm install framer-motion @supabase/supabase-js @supabase/ssr lucide-react clsx tailwind-merge
-```
-
-## 파일 구조
-
-```
-frontend/src/
-├─ app/
-│  ├─ globals.css          # 디자인 토큰 + 글래스모피즘 유틸리티 (@theme / @utility)
-│  ├─ layout.tsx           # lang="ko", Geist + Noto Sans KR 폰트
-│  ├─ page.tsx             # 홈: 히어로 + 기능 카드 4개
-│  └─ writing/page.tsx     # Writing 첨삭 화면 (백엔드 연동 완료)
-├─ components/
-│  ├─ GlassWindow.tsx      # macOS 창 모양 유리 패널 (신호등 버튼 + 타이틀바)
-│  ├─ FeatureCard.tsx      # 호버 시 떠오르는 유리 카드
-│  └─ BackendStatus.tsx    # 타이틀바의 API 연결 표시등
-└─ lib/
-   ├─ api.ts               # evaluateWriting / evaluateSpeaking / checkBackendHealth
-   └─ cn.ts                # clsx + tailwind-merge 헬퍼
-```
-
-## 디자인 토큰 요약
-
-`globals.css` 에 정의된 것들입니다.
-
-- **색**: `ink-950/900/800` (뉴욕 야경 배경), `accent-300/400/500` (차가운 블루 액센트), `signal-400` (경고)
-- **반경**: `--radius-window` 18px (창), `--radius-card` 14px (카드)
-- **그림자**: `--shadow-window` — 멀리 퍼지고 아주 옅게 (macOS 창 특유의 느낌)
-- **유틸리티**:
-  - `glass` / `glass-soft` — `backdrop-filter: blur() saturate()` 기반 유리판
-  - `glass-sheen` — 상단 1px 하이라이트. 유리의 입체감을 만드는 핵심 디테일
-  - `grain` — 미세한 노이즈. 넓은 그라데이션의 밴딩을 감춥니다
-- `prefers-reduced-motion` 을 존중해 애니메이션을 끄는 블록이 포함되어 있습니다.
-
-## 환경 변수
-
-`frontend/.env.local` 은 이미 생성되어 있고 `NEXT_PUBLIC_SUPABASE_URL` 은 백엔드 `.env` 에서
-복사되었습니다. **`NEXT_PUBLIC_SUPABASE_ANON_KEY` 는 플레이스홀더이므로 직접 채워야 합니다**
-(Supabase 대시보드 > Project Settings > API > `anon public`).
-
-```ini
-NEXT_PUBLIC_SUPABASE_URL=<백엔드 .env 와 동일 - 이미 채워짐>
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<직접 입력 필요>
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
-```
-
-> `service_role` 키는 RLS를 우회하므로 **절대 프론트엔드에 두지 마세요.** 백엔드 전용입니다.
+Next.js의 변경된 API는 `node_modules/next/dist/docs/`에서 먼저 확인합니다.
 
 ## 실행
 
-터미널 두 개를 띄웁니다.
+```powershell
+cd C:\Users\user\Desktop\game
+npm.cmd run dev
+```
+
+- 웹: http://localhost:3000
+- FastAPI: http://localhost:8000 (별도 실행)
+- 기존 `.env`, `.env.local`을 그대로 사용하며 키 값을 문서나 Git에 넣지 않습니다.
+- Python 백엔드는 프로젝트에서 사용하는 기존 환경으로 실행하세요. 이전 인계의 별도 frontend/toefl-backend 경로는 현재 폴더 구조와 다릅니다.
+
+## 경로와 컴포넌트
+
+- `/`: 중앙 자유의 여신상·캠퍼스 본관의 한낮 원화와 독립 모션 레이어(배·학생·잎사귀), 제목·설명 있는 네 아이콘을 사용하는 홈. 하단에서 배경 모션을 정지할 수 있고 동작 줄이기 설정을 존중합니다. 첫 방문은 아케이드이고 이후 모드 선택을 저장합니다.
+- 네 게임은 밝은 2.5D 애니메이션풍 전용 배경과 캐릭터를 사용합니다. 아트 원본/웹용은 `public/arcade/`, 스타일은 `src/app/arcade-art.css`, 제작 프롬프트는 `DESIGN_PROMPTS.md`에 있습니다. 갈림길은 후면 달리기, 서브웨이는 측면 점프, 옐로캡은 후방 차량, 메모리는 도서관 카드 덱입니다.
+- `/writing`, `/speaking`: `WritingWorkspace`, `SpeakingWorkspace`를 홈의 학습 화면과 공유합니다.
+- `/history`: `HistoryWorkspace`에서 인증 상태에 따라 기존 대시보드 또는 로그인 안내를 표시합니다.
+- `/login`: 기존 Supabase 로그인 화면입니다.
+- `/os-preview`: 통합이 끝나 제거했습니다.
+- Arcade의 Yellow Cab Rush는 플레이 후 보상·오답을 저장할 수 있습니다. 갈림길은 한국어 뜻에 맞는 좌우 영단어 길을 선택하며 오답이면 즉시 추락합니다. 서브웨이 점프는 뜻이 맞는 발판을 눌러 24번 건넙니다. 두 게임의 점수는 로컬 연습이며 원격 저장은 없습니다. 메모리 카드는 저장된 영역별 오답 또는 예제로 자가 복습합니다. 읽기·듣기 창작 연습은 단계별 3·6·9문제입니다. 우측 도구에서 책상 꾸미기·아이템 뽑기·주간 랭킹·동기부여를 사용합니다.
+- 메뉴바 코인·티어 버튼은 로그인 계정의 게임 API 데이터를 표시합니다. 오류 시 임의 잔액으로 대체하지 않습니다.
+
+학습 화면의 홈으로는 입력과 결과를 유지하고 닫기는 본문을 정리합니다. 게임은 Esc로 종료합니다. 모드·음소거·스티커는 브라우저에 저장하고 작성 중 답변은 메모리에만 보관합니다.
+
+## 검증 명령
 
 ```powershell
-# 터미널 1 - 백엔드
-cd C:\Users\user\toefl-backend
+npm.cmd run lint
+npx.cmd tsc --noEmit
+npm.cmd run build
+npm.cmd run test:ui
+```
+
+UI 검사는 설치된 Chrome과 Playwright를 사용합니다. 3000·3101번 포트가 비어 있어야 하며, 테스트는 자체 서버만 실행·종료합니다. 채점·인증·기록은 로컬 모의 API로 처리하고 가상 마이크를 사용하므로 유료 API나 실제 계정을 사용하지 않습니다. 외부 브라우저 요청도 차단합니다.
+
+`playwright.config.ts`의 `TEST_BROWSER_PATH` 환경 변수로 다른 설치 Chrome 경로를 지정할 수 있습니다. `.env` 파일을 바꾸는 방식이 아닙니다.
+
+Next의 오래된 자동 생성 타입이 삭제된 라우트를 가리키면 개발 서버가 타입을 재생성한 뒤 검사합니다. TypeScript·ESLint 검사를 생략하지 않습니다.
+
+실제 채점·전사는 유료입니다. 테스트 승인 없이 실제 ‘채점 받기’를 누르지 마세요. 실제 Supabase DB 상태는 모의 UI 검사로 검증되지 않습니다.
+
+## 게임 API 연결 주의 사항
+
+2026-10-16 확인 당시 실행 중인 localhost:8000 서버 명세에는 게임 라우트가 없었습니다. 로컬 main.py에는 라우트가 있으므로, 기존 서버를 사용자가 직접 현재 game 폴더에서 재시작해야 합니다. 해당 서버를 도구가 임의로 종료하지 않았습니다.
+
+게임 상태 조회, 보상, 오답 API에는 기존 Supabase 세션 JWT를 사용합니다. Yellow Cab Rush는 로그인한 상태로 시작한 판만 종료 후 저장할 수 있습니다. 저장 버튼은 한 판에 한 번만 동작하며 지급 POST를 자동 재시도하지 않습니다. 네트워크 중단 시 게임 정보 새로고침으로 처리 여부를 확인하세요. 전체 점수·최고 콤보의 별도 기록 화면은 아직 없습니다.
+
+전체 UI 검사 46개, 모바일 조작 보완 검사 2개, TypeScript·ESLint·빌드가 통과했습니다. 상세 결과는 HANDOFF.md 상단을 참고하세요. 자세한 결과는 HANDOFF.md 상단을 참고하세요. 실제 JWT와 원격 DB 저장 왕복은 아직 미검증입니다. 학습 채점 보상과 서버 측 게임 점수 검증은 별도 단계입니다.
+
+## 책상 꾸미기 사용
+
+우측 `나의 책상 꾸미기`에서 나의 책상·아이템 뽑기·주간 랭킹을 전환합니다. 보유 아이템을 선택해 배치 여부와 가로·세로 좌표를 조절하고 저장합니다. 최소화·메뉴 전환은 편집 상태를 유지하며 창을 다시 열면 저장된 배치를 불러옵니다.
+
+뽑기는 횟수와 사용 코인을 확인한 뒤 실행합니다. 서버 응답의 실제 결과와 잔액을 표시합니다. 처리 여부가 불확실한 통신 오류에서는 해당 창의 추가 뽑기를 막고 재조회만 제공합니다. 서버의 중복 방지 키는 아직 없어 창을 닫아도 유지되는 전역 중복 방지를 보장하지 않습니다.
+
+이번 UI 검증은 로컬 모의 API만 사용했습니다. 실제 배치 저장과 뽑기 버튼은 각각 DB 수정과 게임 코인 차감을 수행합니다. 기존 8000번 백엔드를 최신 main.py로 갱신해야 사용할 수 있습니다.
+
+## 백엔드 재시작
+
+기존 FastAPI 로그가 나오는 터미널에서 Ctrl+C를 누른 뒤 아래 명령을 실행합니다. 프론트엔드 npm 서버는 별도 터미널에 유지합니다.
+
+```powershell
+cd C:\Users\user\Desktop\game
 python -m uvicorn main:app --reload --port 8000
 ```
 
-```powershell
-# 터미널 2 - 프론트엔드
-cd C:\Users\user\frontend
-npm run dev
-```
+http://localhost:8000/docs 에 게임 API가 나타나는지 확인하세요. 기존 서버를 도구가 임의로 종료하지 않았습니다.
 
-> 백엔드 패키지(fastapi, openai, supabase)는 miniforge base 환경
-> (`C:\Users\user\miniforge3`)에 설치되어 있습니다. `C:\Users\user\venv` 는 pip만 들어 있는
-> 빈 가상환경이므로 활성화하면 `ModuleNotFoundError` 가 납니다.
+## 브루클린 리듬 슈터
 
-- 프론트: http://localhost:3000
-- API 문서(Swagger): http://localhost:8000/docs
+아케이드 → 브루클린 리듬 슈터 → 슈터 시작. ←→/A·D로 동의어 표적을 조준하고 사격 구간에서 스페이스/발사를 누릅니다. 총 18표적, 기회 3번입니다. 로컬 WAV를 사용하며 마이크·외부 음성인식이 필요 없습니다. 음원 재생 실패나 음소거 상태에서는 화면의 단어로 플레이합니다.
 
-> 백엔드 CORS는 `http://localhost:3000` 만 허용합니다. 다른 포트로 띄울 경우
-> `main.py` 의 `allow_origins` 를 함께 수정하세요.
+## 맨해튼 시크릿 러너
 
-## 남은 작업
+아케이드 → 맨해튼 시크릿 → 시크릿 출격. 무전을 들으며 장애물을 피하고 세 단계 경로를 순서대로 통과합니다. ←→/A·D 이동, 스페이스 대시입니다. 44초씩 세 구역이며 단서 대본을 열면 일시정지합니다. 일시정지·탭 숨김은 음성과 진행을 멈추고 Esc는 정리합니다.
 
-홈 화면에서 "준비 중"으로 표시된 카드들입니다.
+## 새 홈과 소리
 
-- `/history` — 학습 기록 대시보드. 백엔드 조회 엔드포인트가 필요합니다
-- `/practice` — Reading / Listening 모의고사
-- Supabase 로그인 연동 (`@supabase/ssr`). 현재는 토큰 없이 호출하므로
-  제출 기록이 `user_id = null` 로 저장됩니다
+macOS 셸과 하단 Dock은 홈에서 사용하지 않습니다. 배경은 내장 image_gen으로 제작한 캠퍼스·자유의 여신상 원화입니다. 모바일에서는 중앙의 네 아이콘 줄을 가로로 스크롤합니다. 우측 동기부여에서 스티커를 추가·이동·삭제할 수 있으며 브라우저에 보관합니다.
+
+직접 구성한 음악과 효과음을 Web Audio로 합성합니다. 브라우저 정책상 첫 클릭/키 입력 후 시작하며 맨 우측 스피커가 모든 출력 소리를 켜고 끕니다. 스피킹·리스닝에 들어가면 배경음악은 멈춥니다. 유료 음원·생성 API는 사용하지 않습니다.
+
+## 성장과 경쟁
+
+배치 종류별 장식 점수는 일반 1·희귀 2·영웅 3·전설 5입니다. 3점 또는 주간 20위 이내이면 심화, 8점 또는 주간 5위 이내이면 도전 단계가 열립니다. 단계별 연습 문제와 게임 난이도를 선택할 수 있습니다. 성장 보기는 홈 아래쪽, 기록 공유는 주간 랭킹과 게임 결과에 있습니다. 순위는 실제 주간 획득 코인이고 게임 공유 점수는 화면 내 연습 점수입니다.
+
+이 규칙은 프론트의 연습 콘텐츠에 적용됩니다. 서버 보상 정책과 DB 스키마는 그대로이며 게임별 공개 점수 게시판은 아직 없습니다. 상세한 검증과 남은 항목은 HANDOFF.md 최신 현황을 보세요.
+
+
+## 토플 유니온 최신 화면
+
+브랜드명은 **토플 유니온 (TOEFL Union)**이며 새 앱 아이콘이 탭·헤더·모바일 아이콘에 적용됩니다. 생성한 캠퍼스/자유의 여신상 배경과 제작 프롬프트는 `DESIGN_PROMPTS.md`에 있습니다. 배경은 현재 정적이며 모션은 추후 원화 확정 후 진행합니다. 중앙에는 기울임 없는 큰 아이콘 네 개만 있고 모드 버튼은 페이지 정중앙입니다.
+
+브루클린은 이제 **리듬 슈터**입니다. 표적을 조준하고 사격 구간에서 스페이스/발사를 누릅니다. 시크릿은 **추격 러너**입니다. 장애물을 피하고, 단서 순서대로 길을 고르며, 스페이스로 대시합니다. 두 게임 모두 마이크가 필요 없으며 로컬 음원을 사용합니다. 메모리 카드는 저장된 오답을 뒤집어 보는 자가 복습이고 시간 제한이 없습니다.
+
+동기부여는 이미지 파일 여러 장을 추가하는 보관함입니다. 검색어는 보관함 필터와 Pinterest 검색 새 탭에 사용합니다. Pinterest 검색 결과를 앱 내부에 가져오는 API는 연결하지 않았습니다. 공용 이미지 목록은 `public/stickers/`에 파일을 넣고 `node scripts/build-sticker-catalog.mjs`로 갱신합니다. 기기별 개인 이미지는 IndexedDB에 보관하며 원격 DB에는 올리지 않습니다.

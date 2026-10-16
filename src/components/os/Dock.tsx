@@ -71,7 +71,7 @@ function DockIcon({
       <motion.span
         style={{ width: size, height: size }}
         className={cn(
-          "grid place-items-center rounded-[22%] text-[1.5rem] backdrop-blur-xl",
+          "grid max-h-10 max-w-10 place-items-center rounded-[22%] text-[1.5rem] backdrop-blur-xl sm:max-h-none sm:max-w-none",
           app.neon && "shadow-[0_0_22px_-2px_var(--os-accent)]",
         )}
       >
@@ -128,7 +128,7 @@ export function Dock({
         onMouseMove={(e) => mouseX.set(e.clientX)}
         onMouseLeave={() => mouseX.set(Number.POSITIVE_INFINITY)}
         aria-label="앱 독"
-        className="pointer-events-auto flex items-end gap-2.5 rounded-2xl px-3 pt-2 pb-3 backdrop-blur-2xl"
+        className="pointer-events-auto flex max-w-[calc(100vw-16px)] items-end gap-1 overflow-x-auto rounded-2xl px-2 pt-2 pb-3 backdrop-blur-2xl sm:gap-2.5 sm:overflow-visible sm:px-3"
         style={{
           background: "var(--os-dock)",
           border: "1px solid var(--os-border)",
@@ -136,7 +136,7 @@ export function Dock({
         }}
       >
         {DOCK_APPS.map((app, index) => (
-          <div key={app.id} className="flex items-end gap-2.5">
+          <div key={app.id} className="flex shrink-0 items-end gap-1 sm:gap-2.5">
             {/* Arcade 앞에 구분선 */}
             {index === DOCK_APPS.length - 1 ? (
               <span

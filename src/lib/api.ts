@@ -188,6 +188,94 @@ function authHeaders(accessToken: string): HeadersInit {
   return { Authorization: `Bearer ${accessToken}` };
 }
 
+export type GameTier = { level: number; id: string; name: string; emoji: string; required_xp: number };
+export type GameState = {
+  coin_balance: number; total_earned: number; total_spent: number; xp: number;
+  streak_days: number; best_streak_days: number; tier: GameTier;
+  next_tier: GameTier | null; xp_to_next_tier: number | null;
+};
+export type GameReward = {
+  awarded: number; requested: number; capped: boolean; daily_remaining: number | null;
+  coin_balance: number; xp: number; streak_days: number; tier: GameTier;
+};
+export type VocabAnswer = { prompt: string; correct_answer: string; chosen: string; was_correct: boolean };
+
+export function fetchGameState(accessToken: string, signal?: AbortSignal) {
+  return fetch(`${BASE_URL}/api/game/state`, {
+    headers: authHeaders(accessToken), cache: "no-store", signal,
+  }).then((res) => unwrap<GameState>(res));
+}
+
+/** 보상 POST는 재시도하지 않습니다. 금액·상한·경험치는 서버가 결정합니다. */
+export function earnVocabReward(accessToken: string, score: number, correctCount: number) {
+  return fetch(`${BASE_URL}/api/game/coins`, {
+    method: "POST", headers: { ...authHeaders(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify({ reason: "vocab_game", score: Math.min(100_000, score), correct_count: Math.min(1_000, correctCount) }),
+  }).then((res) => unwrap<GameReward>(res));
+}
+
+export function recordVocabAnswer(accessToken: string, answer: VocabAnswer) {
+  return fetch(`${BASE_URL}/api/game/mistakes`, {
+    method: "POST", headers: { ...authHeaders(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify({ source: "vocab", ...answer }),
+  }).then((res) => unwrap<unknown>(res));
+}
+
+export type InventoryItem = {
+  item_id: string; name: string; emoji: string; rarity: string; description: string | null;
+  quantity: number; placed: boolean; placed_x: number | null; placed_y: number | null;
+};
+export type GachaResult = {
+  items: { id: string; name: string; emoji: string; rarity: string; quantity: number }[];
+  cost: number; coin_balance: number;
+};
+export type WeeklyLeaderboard = {
+  rows: { rank: number; display_name: string; earned_this_week: number; is_me: boolean }[];
+  my_rank: number | null;
+};
+
+export type GameMistake = { id: string; source: string; prompt: string; correct_answer: string; times_wrong: number; times_right: number; resolved: boolean; last_wrong_at: string };
+export function fetchVocabMistakes(accessToken: string, signal?: AbortSignal) {
+  return fetch(`${BASE_URL}/api/game/mistakes?source=vocab&limit=30`, { headers: authHeaders(accessToken), cache: "no-store", signal }).then(res => unwrap<{ items: GameMistake[] }>(res));
+}
+
+export type MistakeSource = "vocab" | "writing" | "speaking" | "reading" | "listening";
+export function fetchReviewMistakes(accessToken: string, signal?: AbortSignal) {
+  return fetch(`${BASE_URL}/api/game/mistakes?limit=100`, { headers: authHeaders(accessToken), cache: "no-store", signal }).then(res => unwrap<{ items: GameMistake[] }>(res));
+}
+export function recordReviewAnswer(accessToken: string, source: MistakeSource, answer: VocabAnswer) {
+  return fetch(`${BASE_URL}/api/game/mistakes`, {
+    method: "POST", headers: { ...authHeaders(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify({ source, ...answer }),
+  }).then(res => unwrap<unknown>(res));
+}
+
+export function fetchInventory(accessToken: string, signal?: AbortSignal) {
+  return fetch(`${BASE_URL}/api/game/inventory`, {
+    headers: authHeaders(accessToken), cache: "no-store", signal,
+  }).then((res) => unwrap<{ items: InventoryItem[] }>(res));
+}
+
+export function placeInventoryItem(accessToken: string, placement: { item_id: string; placed: boolean; x: number | null; y: number | null }) {
+  return fetch(`${BASE_URL}/api/game/inventory/place`, {
+    method: "POST", headers: { ...authHeaders(accessToken), "Content-Type": "application/json" },
+    body: JSON.stringify(placement),
+  }).then((res) => unwrap<InventoryItem>(res));
+}
+
+/** 횟수만 보내고 비용과 추첨 결과는 서버 응답을 사용합니다. 자동 재시도하지 않습니다. */
+export function drawGacha(accessToken: string, count: number) {
+  return fetch(`${BASE_URL}/api/game/gacha?count=${count}`, {
+    method: "POST", headers: authHeaders(accessToken),
+  }).then((res) => unwrap<GachaResult>(res));
+}
+
+export function fetchWeeklyLeaderboard(accessToken: string, signal?: AbortSignal) {
+  return fetch(`${BASE_URL}/api/game/leaderboard?limit=20`, {
+    headers: authHeaders(accessToken), cache: "no-store", signal,
+  }).then((res) => unwrap<WeeklyLeaderboard>(res));
+}
+
 /** 섹션별 집계 + 점수 추세 (히스토리 대시보드 상단) */
 export function fetchStats(
   accessToken: string,

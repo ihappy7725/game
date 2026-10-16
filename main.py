@@ -6,13 +6,23 @@
   GET  /api/submissions        : 제출 기록 목록 (최신순, 페이지네이션)
   GET  /api/submissions/{id}   : 제출 기록 상세 (루브릭 세부 점수·교정문 포함)
   GET  /api/stats              : 섹션별 통계와 점수 추세 (히스토리 대시보드)
+
+게임화 엔드포인트 (/api/game/*)는 아래 "게임화" 블록에 있습니다.
+DDL은 supabase_gamification.sql 입니다.
+
+주의: 같은 기능이 두 번 구현되어 있습니다. 이 파일의 게임화 블록 외에,
+gamification_api.py.parked 에 테이블·함수 이름이 다른 별개 구현이
+보관되어 있습니다(DDL은 supabase_gamification_states.sql). 둘 중 하나만
+골라 쓰세요. 비교는 GAMIFICATION_BACKEND.md 를 보세요.
 """
 
+import hashlib
 import json
 import logging
 import os
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Literal, Optional, Tuple
+import random
+from datetime import date, datetime, timedelta, timezone
+from typing import Any, Dict, List, Literal, NamedTuple, Optional, Tuple
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, Header, HTTPException, Query, Request, UploadFile
@@ -893,4 +903,643 @@ async def get_stats(
         total_attempts=sum(item.attempts for item in sections),
         days=days,
         section=section,
+    )
+
+
+# ---------------------------------------------------------------------------
+# 게임화: 코인 원장 · 티어 · 가챠 · 오답 기록 · 주간 랭킹
+#
+# 전제: supabase_gamification.sql 을 먼저 실행해야 합니다.
+#
+# 잔액 검사 · 일일 상한 집계 · 원장 기록 · 캐시 갱신은 전부 DB 함수 안에서
+# 한 트랜잭션으로 처리합니다. 파이썬에서 "오늘 얼마 줬는지 조회 → 지급"으로
+# 나누면, 동시에 들어온 두 요청이 같은 잔여 상한을 읽고 둘 다 통과합니다.
+# ---------------------------------------------------------------------------
+
+# (tier_level, id, 이름, 이모지, 필요 xp)
+#
+# 티어는 코인이 아니라 xp 로 매깁니다. 잔액으로 매기면 가챠를 돌릴 때마다
+# 강등되고, 누적 획득액으로 매기면 "공부한 양"과 "번 돈"이 한 숫자에 섞입니다.
+# 기준값: 채점 1회 60xp, 어휘 게임 한 판 20xp → 맨해튼까지 약 15회 학습,
+# 아이비리그는 꾸준히 두어 달.
+TIER_LADDER: Tuple[Tuple[int, str, str, str, int], ...] = (
+    (1, "jfk", "JFK 입국자", "✈️", 0),
+    (2, "manhattan", "맨해튼 유학생", "🚇", 1_000),
+    (3, "columbia", "컬럼비아 연구원", "🏛️", 5_000),
+    (4, "ivy", "아이비리그 졸업생", "🎓", 15_000),
+)
+
+GACHA_COST = 300
+MAX_GACHA_COUNT = 10
+
+
+class EarnRule(NamedTuple):
+    """사유별 지급 규칙.
+
+    금액을 클라이언트에서 받지 않는 이유: 그대로 더해 주면 요청을 조작해
+    원하는 만큼 코인을 만들 수 있습니다. 클라이언트는 "무엇을 했는지"만 보고하고
+    금액과 xp 는 서버가 정합니다.
+    """
+
+    label: str
+    #: 한 번에 줄 수 있는 최대 코인
+    per_event_max: int
+    #: 하루 총량 상한 (DB 함수가 잠금 안에서 적용)
+    daily_max: int
+    #: 이 사유로 얻는 경험치
+    xp: int
+
+
+EARN_RULES: Dict[str, EarnRule] = {
+    # 학습이 게임보다 xp 가 큽니다. 게임만 돌려서 승급하지 못하게 합니다.
+    "writing_evaluated": EarnRule("Writing 첨삭", per_event_max=60, daily_max=300, xp=60),
+    "speaking_evaluated": EarnRule("Speaking 첨삭", per_event_max=60, daily_max=300, xp=60),
+    "vocab_game": EarnRule("어휘 게임", per_event_max=120, daily_max=600, xp=20),
+    "mistake_cleared": EarnRule("오답 재도전 성공", per_event_max=30, daily_max=300, xp=15),
+    "daily_check_in": EarnRule("출석", per_event_max=50, daily_max=50, xp=10),
+}
+
+#: 클라이언트가 요청할 수 없는 사유 (서버 내부에서만 기록)
+SERVER_ONLY_REASONS = frozenset(
+    {"streak_bonus", "boss_damage", "tier_up", "bet_win", "bet_forfeit", "admin_grant", "admin_revoke", "gacha_draw"}
+)
+
+EarnReason = Literal[
+    "writing_evaluated", "speaking_evaluated", "vocab_game", "mistake_cleared", "daily_check_in"
+]
+
+
+def _tier_of(xp: int) -> Tuple[int, str, str, str, int]:
+    """누적 xp 로 현재 티어를 구한다."""
+    current = TIER_LADDER[0]
+    for tier in TIER_LADDER:
+        if xp >= tier[4]:
+            current = tier
+    return current
+
+
+def _award_for(reason: str, score: int, correct_count: int) -> int:
+    """사유와 성과 지표로 지급액을 계산한다(클라이언트가 보낸 금액은 쓰지 않는다)."""
+    rule = EARN_RULES[reason]
+    if reason == "vocab_game":
+        # 점수 10점당 1코인 + 정답 1개당 2코인
+        raw = score // 10 + correct_count * 2
+    else:
+        # 채점·출석은 성과와 무관하게 고정 지급합니다. 점수에 연동하면 쉬운
+        # 답안을 반복 제출하는 쪽이 이득이 되어 학습 동기가 뒤틀립니다.
+        raw = rule.per_event_max
+    return max(0, min(raw, rule.per_event_max))
+
+
+def _game_rpc(client: Client, fn: str, params: Dict[str, Any]) -> Any:
+    """게임 RPC 호출. DB 함수가 올린 예외를 사용자용 상태 코드로 옮긴다."""
+    try:
+        response = client.rpc(fn, params).execute()
+    except Exception as exc:
+        message = str(exc)
+        if "INSUFFICIENT_FUNDS" in message:
+            raise HTTPException(status_code=409, detail="코인이 부족합니다.") from exc
+        if "EMPTY_CATALOG" in message:
+            raise HTTPException(status_code=503, detail="가챠 카탈로그가 비어 있습니다.") from exc
+        if "INVALID_COST" in message or "INVALID_COUNT" in message or "ZERO_AMOUNT" in message:
+            raise HTTPException(status_code=400, detail="요청 값이 올바르지 않습니다.") from exc
+        logger.exception("게임 RPC 실패: %s", fn)
+        raise HTTPException(
+            status_code=502,
+            detail=f"게임 데이터 처리에 실패했습니다(supabase_gamification.sql 실행 여부를 확인하세요): {exc}",
+        ) from exc
+
+    data = getattr(response, "data", None)
+    if isinstance(data, list):
+        return data[0] if data else {}
+    return data if data is not None else {}
+
+
+def _state_row(payload: Any) -> Dict[str, Any]:
+    """game_apply_coins 가 돌려준 jsonb 에서 상태 부분만 꺼낸다."""
+    if isinstance(payload, dict) and isinstance(payload.get("state"), dict):
+        return payload["state"]
+    return payload if isinstance(payload, dict) else {}
+
+
+class TierInfo(BaseModel):
+    level: int
+    id: str
+    name: str
+    emoji: str
+    required_xp: int
+
+
+def _tier_info(xp: int) -> Tuple[TierInfo, Optional[TierInfo], Optional[int]]:
+    """현재 티어, 다음 티어, 다음까지 남은 xp 를 함께 만든다."""
+    tier = _tier_of(xp)
+    index = TIER_LADDER.index(tier)
+    upcoming = TIER_LADDER[index + 1] if index + 1 < len(TIER_LADDER) else None
+    return (
+        TierInfo(level=tier[0], id=tier[1], name=tier[2], emoji=tier[3], required_xp=tier[4]),
+        TierInfo(level=upcoming[0], id=upcoming[1], name=upcoming[2], emoji=upcoming[3], required_xp=upcoming[4])
+        if upcoming
+        else None,
+        (upcoming[4] - xp) if upcoming else None,
+    )
+
+
+class GameStateResponse(BaseModel):
+    coin_balance: int
+    total_earned: int
+    total_spent: int
+    xp: int
+    streak_days: int
+    best_streak_days: int
+    tier: TierInfo
+    next_tier: Optional[TierInfo] = None
+    xp_to_next_tier: Optional[int] = None
+
+
+class CoinEarnRequest(BaseModel):
+    reason: EarnReason
+    #: 게임 점수 등 성과 지표. "금액"이 아니며 서버가 지급액을 다시 계산합니다.
+    score: int = Field(default=0, ge=0, le=100_000)
+    correct_count: int = Field(default=0, ge=0, le=1_000)
+
+
+class CoinEarnResponse(BaseModel):
+    awarded: int
+    requested: int
+    #: 일일 상한에 걸려 깎였으면 True
+    capped: bool
+    daily_remaining: Optional[int] = None
+    coin_balance: int
+    xp: int
+    streak_days: int
+    tier: TierInfo
+
+
+class GachaItem(BaseModel):
+    id: str
+    name: str
+    emoji: str
+    rarity: str
+    #: 이번 뽑기 반영 후 보유 수량
+    quantity: int
+
+
+class GachaResponse(BaseModel):
+    items: List[GachaItem]
+    cost: int
+    coin_balance: int
+
+
+class InventoryEntry(BaseModel):
+    item_id: str
+    name: str
+    emoji: str
+    rarity: str
+    description: Optional[str] = None
+    quantity: int
+    placed: bool
+    placed_x: Optional[float] = None
+    placed_y: Optional[float] = None
+
+
+class InventoryResponse(BaseModel):
+    items: List[InventoryEntry]
+
+
+class PlaceItemRequest(BaseModel):
+    item_id: str = Field(min_length=1, max_length=64)
+    placed: bool = True
+    x: Optional[float] = Field(default=None, ge=0, le=100)
+    y: Optional[float] = Field(default=None, ge=0, le=100)
+
+
+class LeaderboardRow(BaseModel):
+    rank: int
+    display_name: str
+    earned_this_week: int
+    is_me: bool
+
+
+class LeaderboardResponse(BaseModel):
+    rows: List[LeaderboardRow]
+    my_rank: Optional[int] = None
+
+
+class MistakeEntry(BaseModel):
+    id: str
+    source: str
+    prompt: str
+    correct_answer: str
+    times_wrong: int
+    times_right: int
+    resolved: bool
+    last_wrong_at: str
+
+
+class MistakesResponse(BaseModel):
+    items: List[MistakeEntry]
+
+
+class MistakeRecordRequest(BaseModel):
+    source: Literal["vocab", "writing", "speaking", "reading", "listening"]
+    prompt: str = Field(min_length=1, max_length=500)
+    correct_answer: str = Field(min_length=1, max_length=500)
+    chosen: Optional[str] = Field(default=None, max_length=500)
+    #: True 면 "다시 맞혔다"로 기록한다
+    was_correct: bool = False
+
+
+@app.get("/api/game/state", response_model=GameStateResponse)
+async def get_game_state(authorization: Optional[str] = Header(default=None)):
+    """메뉴바가 읽는 코인 잔액·xp·티어·연속 학습일.
+
+    읽기 전용입니다. 여기서 streak 을 건드리면 화면을 열어 두기만 해도
+    연속 학습일이 올라갑니다.
+    """
+    client = _require_supabase()
+    user_id = _require_user_id(authorization)
+
+    row = _state_row(_game_rpc(client, "game_ensure_profile", {"p_user_id": user_id}))
+    xp = int(row.get("xp") or 0)
+    tier, next_tier, to_next = _tier_info(xp)
+
+    return GameStateResponse(
+        coin_balance=int(row.get("coin_balance") or 0),
+        total_earned=int(row.get("total_earned") or 0),
+        total_spent=int(row.get("total_spent") or 0),
+        xp=xp,
+        streak_days=int(row.get("streak_days") or 0),
+        best_streak_days=int(row.get("best_streak_days") or 0),
+        tier=tier,
+        next_tier=next_tier,
+        xp_to_next_tier=to_next,
+    )
+
+
+@app.post("/api/game/coins", response_model=CoinEarnResponse)
+async def earn_coins(
+    payload: CoinEarnRequest,
+    authorization: Optional[str] = Header(default=None),
+):
+    """코인을 지급한다. 금액·xp 는 서버가 정하고 일일 상한은 DB 가 잠금 안에서 적용한다.
+
+    한계는 분명히 해 둡니다. 어휘 게임 점수는 결국 클라이언트가 보고하는 값이라,
+    요청을 직접 만들면 상한까지는 부풀릴 수 있습니다. 이를 완전히 막으려면 게임
+    진행 자체를 서버에서 검증해야 하며 지금 범위를 벗어납니다. 그래서 상한을
+    촘촘히 두어 피해를 "하루 수백 코인"으로 가둡니다.
+    """
+    client = _require_supabase()
+    user_id = _require_user_id(authorization)
+
+    rule = EARN_RULES[payload.reason]
+    amount = _award_for(payload.reason, payload.score, payload.correct_count)
+
+    # 금액이 0이어도 xp·streak 은 올려 줍니다(상한에 걸린 날에도 공부는 한 것).
+    result: Dict[str, Any] = {}
+    if amount > 0:
+        result = _game_rpc(
+            client,
+            "game_apply_coins",
+            {
+                "p_user_id": user_id,
+                "p_amount": amount,
+                "p_reason": payload.reason,
+                "p_daily_cap": rule.daily_max,
+                "p_xp": 0,  # xp 는 아래 game_touch_activity 가 담당합니다
+                "p_metadata": {"score": payload.score, "correct_count": payload.correct_count},
+            },
+        )
+
+    # xp 증가 + streak 갱신. 그 결과 xp 로 티어를 다시 계산해 캐시에 반영합니다.
+    state = _state_row(
+        _game_rpc(
+            client,
+            "game_touch_activity",
+            {"p_user_id": user_id, "p_xp": rule.xp, "p_tier_level": None},
+        )
+    )
+    xp = int(state.get("xp") or 0)
+    tier, _next, _to_next = _tier_info(xp)
+    if int(state.get("tier_level") or 0) != tier.level:
+        state = _state_row(
+            _game_rpc(
+                client,
+                "game_touch_activity",
+                {"p_user_id": user_id, "p_xp": 0, "p_tier_level": tier.level},
+            )
+        )
+
+    applied = int(result.get("applied") or 0)
+    return CoinEarnResponse(
+        awarded=applied,
+        requested=amount,
+        capped=bool(result.get("capped")) or (amount > 0 and applied < amount),
+        daily_remaining=result.get("cap_remaining"),
+        coin_balance=int(state.get("coin_balance") or 0),
+        xp=xp,
+        streak_days=int(state.get("streak_days") or 0),
+        tier=tier,
+    )
+
+
+@app.post("/api/game/gacha", response_model=GachaResponse)
+async def draw_gacha(
+    count: int = Query(default=1, ge=1, le=MAX_GACHA_COUNT, description="연차 횟수"),
+    authorization: Optional[str] = Header(default=None),
+):
+    """가챠. 차감·추첨·적립이 DB 함수 하나의 트랜잭션 안에서 끝난다.
+
+    확률표(game_items.weight)는 DB 안에만 있고 추첨도 DB 가 합니다.
+    """
+    client = _require_supabase()
+    user_id = _require_user_id(authorization)
+
+    result = _game_rpc(
+        client,
+        "game_draw_gacha",
+        {"p_user_id": user_id, "p_cost": GACHA_COST, "p_count": count},
+    )
+    drawn = result.get("items") if isinstance(result, dict) else None
+    if not isinstance(drawn, list) or not drawn:
+        raise HTTPException(status_code=502, detail="가챠 결과를 받지 못했습니다.")
+
+    state = _state_row(result)
+    return GachaResponse(
+        items=[
+            GachaItem(
+                id=str(item.get("id")),
+                name=str(item.get("name")),
+                emoji=str(item.get("emoji") or "📦"),
+                rarity=str(item.get("rarity") or "common"),
+                quantity=int(item.get("quantity") or 1),
+            )
+            for item in drawn
+        ],
+        cost=int(result.get("cost") or GACHA_COST * count),
+        coin_balance=int(state.get("coin_balance") or 0),
+    )
+
+
+@app.get("/api/game/inventory", response_model=InventoryResponse)
+async def get_inventory(authorization: Optional[str] = Header(default=None)):
+    """보유 아이템과 기숙사 배치 좌표."""
+    client = _require_supabase()
+    user_id = _require_user_id(authorization)
+
+    try:
+        response = (
+            client.table("game_inventory")
+            .select(
+                "item_id, quantity, placed, placed_x, placed_y,"
+                " game_items(name, emoji, rarity, description, sort_order)"
+            )
+            .eq("user_id", user_id)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("인벤토리 조회 실패")
+        raise HTTPException(status_code=502, detail=f"인벤토리 조회에 실패했습니다: {exc}") from exc
+
+    entries: List[Tuple[int, InventoryEntry]] = []
+    for row in getattr(response, "data", None) or []:
+        meta = row.get("game_items") or {}
+        entries.append(
+            (
+                int(meta.get("sort_order") or 100),
+                InventoryEntry(
+                    item_id=str(row.get("item_id")),
+                    name=str(meta.get("name") or row.get("item_id")),
+                    emoji=str(meta.get("emoji") or "📦"),
+                    rarity=str(meta.get("rarity") or "common"),
+                    description=meta.get("description"),
+                    quantity=int(row.get("quantity") or 0),
+                    placed=bool(row.get("placed")),
+                    placed_x=_optional_float(row.get("placed_x")),
+                    placed_y=_optional_float(row.get("placed_y")),
+                ),
+            )
+        )
+    entries.sort(key=lambda pair: (pair[0], pair[1].item_id))
+    return InventoryResponse(items=[entry for _, entry in entries])
+
+
+@app.post("/api/game/inventory/place", response_model=InventoryEntry)
+async def place_item(
+    payload: PlaceItemRequest,
+    authorization: Optional[str] = Header(default=None),
+):
+    """기숙사 책상 위 배치 좌표를 저장한다(보유한 아이템만)."""
+    client = _require_supabase()
+    user_id = _require_user_id(authorization)
+
+    try:
+        owned = (
+            client.table("game_inventory")
+            .select("item_id, quantity, game_items(name, emoji, rarity, description)")
+            .eq("user_id", user_id)
+            .eq("item_id", payload.item_id)
+            .limit(1)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("보유 확인 실패")
+        raise HTTPException(status_code=502, detail=f"보유 확인에 실패했습니다: {exc}") from exc
+
+    rows = getattr(owned, "data", None) or []
+    if not rows:
+        raise HTTPException(status_code=404, detail="보유하지 않은 아이템입니다.")
+
+    try:
+        updated = (
+            client.table("game_inventory")
+            .update({"placed": payload.placed, "placed_x": payload.x, "placed_y": payload.y})
+            .eq("user_id", user_id)
+            .eq("item_id", payload.item_id)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("배치 저장 실패")
+        raise HTTPException(status_code=502, detail=f"배치 저장에 실패했습니다: {exc}") from exc
+
+    meta = rows[0].get("game_items") or {}
+    saved = (getattr(updated, "data", None) or [{}])[0]
+    return InventoryEntry(
+        item_id=payload.item_id,
+        name=str(meta.get("name") or payload.item_id),
+        emoji=str(meta.get("emoji") or "📦"),
+        rarity=str(meta.get("rarity") or "common"),
+        description=meta.get("description"),
+        quantity=int(rows[0].get("quantity") or 0),
+        placed=bool(saved.get("placed", payload.placed)),
+        placed_x=_optional_float(saved.get("placed_x", payload.x)),
+        placed_y=_optional_float(saved.get("placed_y", payload.y)),
+    )
+
+
+@app.get("/api/game/leaderboard", response_model=LeaderboardResponse)
+async def get_leaderboard(
+    limit: int = Query(default=20, ge=1, le=100),
+    authorization: Optional[str] = Header(default=None),
+):
+    """이번 주 획득 코인 순위."""
+    client = _require_supabase()
+    user_id = _require_user_id(authorization)
+
+    try:
+        response = (
+            client.table("game_weekly_leaderboard")
+            .select("user_id, display_name, earned_this_week")
+            .order("earned_this_week", desc=True)
+            .limit(limit)
+            .execute()
+        )
+    except Exception as exc:
+        logger.exception("랭킹 조회 실패")
+        raise HTTPException(status_code=502, detail=f"랭킹 조회에 실패했습니다: {exc}") from exc
+
+    rows: List[LeaderboardRow] = []
+    my_rank: Optional[int] = None
+    for index, row in enumerate(getattr(response, "data", None) or [], start=1):
+        is_me = str(row.get("user_id")) == user_id
+        if is_me:
+            my_rank = index
+        rows.append(
+            LeaderboardRow(
+                rank=index,
+                display_name=str(row.get("display_name") or "익명 유학생"),
+                earned_this_week=int(row.get("earned_this_week") or 0),
+                is_me=is_me,
+            )
+        )
+    return LeaderboardResponse(rows=rows, my_rank=my_rank)
+
+
+@app.get("/api/game/mistakes", response_model=MistakesResponse)
+async def list_mistakes(
+    source: Optional[Literal["vocab", "writing", "speaking", "reading", "listening"]] = Query(
+        default=None
+    ),
+    include_resolved: bool = Query(default=False),
+    limit: int = Query(default=30, ge=1, le=100),
+    authorization: Optional[str] = Header(default=None),
+):
+    """Memory Boss Raid 출제용 오답 목록(기본은 아직 졸업하지 않은 것만)."""
+    client = _require_supabase()
+    user_id = _require_user_id(authorization)
+
+    query = client.table("game_mistakes").select("*").eq("user_id", user_id)
+    if source:
+        query = query.eq("source", source)
+    if not include_resolved:
+        query = query.eq("resolved", False)
+
+    try:
+        response = query.order("last_wrong_at", desc=True).limit(limit).execute()
+    except Exception as exc:
+        logger.exception("오답 조회 실패")
+        raise HTTPException(status_code=502, detail=f"오답 조회에 실패했습니다: {exc}") from exc
+
+    return MistakesResponse(
+        items=[
+            MistakeEntry(
+                id=str(row.get("id")),
+                source=str(row.get("source")),
+                prompt=str(row.get("prompt")),
+                correct_answer=str(row.get("correct_answer")),
+                times_wrong=int(row.get("times_wrong") or 0),
+                times_right=int(row.get("times_right") or 0),
+                resolved=bool(row.get("resolved")),
+                last_wrong_at=str(row.get("last_wrong_at")),
+            )
+            for row in (getattr(response, "data", None) or [])
+        ]
+    )
+
+
+#: 연속으로 이만큼 맞히면 보스전 출제에서 제외한다
+MISTAKE_RESOLVE_AT = 2
+
+
+@app.post("/api/game/mistakes", response_model=MistakeEntry)
+async def record_mistake(
+    payload: MistakeRecordRequest,
+    authorization: Optional[str] = Header(default=None),
+):
+    """오답을 기록하거나, 다시 맞힌 것을 반영한다.
+
+    읽고 쓰는 사이에 같은 문제가 동시에 들어오면 횟수가 한 번 덜 세어질 수 있습니다.
+    코인과 달리 돈이 아니라 복습 카운터라 그 정도 오차는 감수하고, 트랜잭션 비용을
+    들이지 않았습니다.
+    """
+    client = _require_supabase()
+    user_id = _require_user_id(authorization)
+    now = datetime.now(timezone.utc).isoformat()
+
+    try:
+        existing = (
+            client.table("game_mistakes")
+            .select("*")
+            .eq("user_id", user_id)
+            .eq("source", payload.source)
+            .eq("prompt", payload.prompt)
+            .limit(1)
+            .execute()
+        )
+        rows = getattr(existing, "data", None) or []
+
+        if rows:
+            current = rows[0]
+            times_wrong = int(current.get("times_wrong") or 0)
+            times_right = int(current.get("times_right") or 0)
+            if payload.was_correct:
+                times_right += 1
+            else:
+                times_wrong += 1
+                times_right = 0  # 틀리면 졸업 진행도를 처음부터 다시
+
+            patch: Dict[str, Any] = {
+                "times_wrong": times_wrong,
+                "times_right": times_right,
+                "resolved": times_right >= MISTAKE_RESOLVE_AT,
+                "last_chosen": payload.chosen,
+                "correct_answer": payload.correct_answer,
+            }
+            patch["last_right_at" if payload.was_correct else "last_wrong_at"] = now
+
+            saved = (
+                client.table("game_mistakes").update(patch).eq("id", current["id"]).execute()
+            )
+            row = (getattr(saved, "data", None) or [current])[0]
+        else:
+            if payload.was_correct:
+                raise HTTPException(status_code=404, detail="기록에 없는 문제입니다.")
+            saved = (
+                client.table("game_mistakes")
+                .insert(
+                    {
+                        "user_id": user_id,
+                        "source": payload.source,
+                        "prompt": payload.prompt,
+                        "correct_answer": payload.correct_answer,
+                        "last_chosen": payload.chosen,
+                    }
+                )
+                .execute()
+            )
+            row = (getattr(saved, "data", None) or [{}])[0]
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("오답 기록 실패")
+        raise HTTPException(status_code=502, detail=f"오답 기록에 실패했습니다: {exc}") from exc
+
+    return MistakeEntry(
+        id=str(row.get("id")),
+        source=str(row.get("source") or payload.source),
+        prompt=str(row.get("prompt") or payload.prompt),
+        correct_answer=str(row.get("correct_answer") or payload.correct_answer),
+        times_wrong=int(row.get("times_wrong") or 1),
+        times_right=int(row.get("times_right") or 0),
+        resolved=bool(row.get("resolved")),
+        last_wrong_at=str(row.get("last_wrong_at") or now),
     )

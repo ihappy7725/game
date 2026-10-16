@@ -20,9 +20,9 @@ const notoSansKr = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "토플 고득점 도우미",
+  title: "토플 유니온 | TOEFL Union",
   description:
-    "ETS 루브릭 기반 GPT-4o 첨삭으로 TOEFL Writing과 Speaking 점수를 끌어올리세요.",
+    "공부와 게임으로 함께 성장하는 토플 유니온. 영어 읽기·듣기·쓰기·말하기를 나만의 속도로 연습하세요.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
