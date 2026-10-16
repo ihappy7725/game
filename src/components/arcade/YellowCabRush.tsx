@@ -78,7 +78,7 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
   const deckIndexRef = useRef(0);
   const roundKeyRef = useRef(0);
 
-  const presentation = useGameOutcome("cab", difficulty);
+  const { outcome, complete: completeRun, reset: resetRun } = useGameOutcome("cab", difficulty);
   useGameLoop("cab", phase === "over" ? "ended" : phase === "running" ? "running" : "idle");
   const fever = combo >= FEVER_AT;
   const roundMs = Math.round((fever ? FEVER_ROUND_MS : ROUND_MS) * [1, 0.8, 0.65][difficulty]);
@@ -103,7 +103,7 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
   }, []);
 
   const startGame = useCallback(() => {
-    presentation.reset();
+    resetRun();
     fieldRef.current?.focus();
     setRunUserId(auth.status === "signed-in" ? auth.userId : null);
     answersRef.current = [];
@@ -120,7 +120,7 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
     setMissed([]);
     setPhase("running");
     deal();
-  }, [deal, auth, presentation.reset]);
+  }, [deal, auth, resetRun]);
 
   const moveTo = useCallback(
     (next: number) => {
@@ -174,14 +174,14 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
     const timer = window.setTimeout(() => {
       if (livesRef.current <= 0) {
         setSummary({ answers: [...answersRef.current], correctCount: correctCountRef.current });
-        presentation.complete(score, correctCountRef.current >= 10);
+        completeRun(score, correctCountRef.current >= 10);
         setPhase("over");
       }
       else deal();
     }, FEEDBACK_MS);
 
     return () => window.clearTimeout(timer);
-  }, [phase, stage, deal, score, presentation.complete]);
+  }, [phase, stage, deal, score, completeRun]);
 
   // 키보드 조작. 창을 닫으면 언마운트되면서 리스너가 정리된다.
   useEffect(() => {
@@ -204,7 +204,7 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
   }, [phase, moveTo]);
 
   return (
-    <div ref={fieldRef} tabIndex={0} aria-label="택시 게임 조작 영역" className="cab-game arcade-art-game relative overflow-hidden rounded-2xl outline-offset-2" style={{ border: "1px solid var(--os-border)" }}>
+    <div ref={fieldRef} tabIndex={0} aria-label="택시 게임 조작 영역" className="cab-game arcade-art-game relative overflow-hidden rounded-2xl outline-offset-2">
       <div className="relative min-h-[460px]">
         <div className="cab-illustration" aria-hidden="true"/>
 
@@ -234,7 +234,7 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
           ) : null}
         </div>
 
-        {phase === "over" ? <GameOutcome outcome={presentation.outcome}/> : null}
+        {phase === "over" ? <GameOutcome outcome={outcome}/> : null}
         {phase === "ready" ? (
           <IntroPanel difficulty={difficulty} onStart={startGame} checkingSession={auth.status === "loading"} />
         ) : phase === "over" ? (

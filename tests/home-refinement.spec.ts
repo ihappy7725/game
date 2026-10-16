@@ -23,8 +23,9 @@ test("모드 버튼은 정중앙·아이콘 제목과 설명·한낮 원화와 �
     await expect(page.getByText("나만의 미국 유학 준비",{exact:true})).toHaveCount(0);
     const background=page.locator(".learning-hub>.landmark-scene");
     const width=await background.evaluate(async el=>{const url=getComputedStyle(el).backgroundImage.slice(5,-2);const image=new Image();image.src=url;await image.decode();return image.naturalWidth;});expect(width).toBeGreaterThan(1600);
-    expect(await background.evaluate(el=>el.getAnimations({subtree:true}).length)).toBeGreaterThan(3);
-    await expect(background).toHaveCSS("background-position","50% 50%");
+    await expect(background).toHaveAttribute("data-scene-kind","poster");
+    await expect(background.locator(".scene-plane")).toHaveCount(0);
+    await expect(background).toHaveCSS("background-position","50% 0px");
     await page.mouse.move(10,850);await page.screenshot({animations:"disabled",path:test.info().outputPath(mode==="공부 모드" ? "campus-home.png" : "liberty-home.png")});
   }
 });

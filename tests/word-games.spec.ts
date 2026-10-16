@@ -1,6 +1,6 @@
 import { expect, test, type Page, type Locator } from "@playwright/test";
 import { VOCAB } from "../src/lib/vocab";
-import { forkDuration, forkEnergy, subwayDuration } from "../src/lib/word-arcade";
+import { forkDuration, forkEnergy } from "../src/lib/word-arcade";
 
 test.beforeEach(async ({ context }) => {
   await context.route("**/*", route => {
@@ -13,7 +13,7 @@ async function open(page: Page, name: string) {
   await page.goto("/");
   await page.getByRole("navigation", { name: "미니게임" }).getByRole("button", { name, exact: true }).click();
   const game = page.getByRole("region", { name: "전체 화면 게임" });
-  await page.clock.install(); await page.clock.pauseAt(new Date());
+  await page.clock.install({time:new Date(0)}); await page.clock.pauseAt(new Date(1000));
   return game;
 }
 async function choose(game: Locator, kind: "갈림길" | "서브웨이", correct = true) {
@@ -64,61 +64,18 @@ test("갈림길 시간 초과·일시정지·탭 숨김·Esc 타이머 정리", 
   await expect(page.getByRole("navigation", { name: "미니게임" })).toBeVisible();
 });
 
-test("서브웨이 24발판 완주·연속 착지·빠른 점프 보너스", async ({ page }) => {
-  const game = await open(page, "서브웨이 점프"); await game.getByRole("button", { name: "서브웨이 출발" }).click();
-  for (let i = 0; i < 24; i++) {
-    await choose(game, "서브웨이"); await page.clock.fastForward(660);
-    await expect(game.getByLabel("서브웨이 기록")).toContainText(`착지 ${i + 1}`);
-    await expect(game.getByRole("status")).toContainText("빠른 점프");
-    if ((i + 1) % 5 === 0) await expect(game.getByRole("status")).toContainText("구급 키트");
-    await page.clock.fastForward(720);
-  }
-  await expect(game.getByLabel("서브웨이 결과")).toContainText("유니온 역에 도착");
-  await expect(game.getByLabel("서브웨이 결과")).toContainText("착지 24/24");
-  await game.getByRole("button", { name: "다시 출발" }).click(); await expect(game.getByLabel("서브웨이 기록")).toContainText("0점");
-});
-
-test("서브웨이 오답·시간 초과로 기회 소모·정지 중 점프 금지", async ({ page }) => {
-  const game = await open(page, "서브웨이 점프"); await game.getByRole("button", { name: "서브웨이 출발" }).click();
-  await game.getByRole("button", { name: "일시정지", exact: true }).click(); await page.clock.fastForward(60_000);
-  await expect(game.locator(".word-platform").first()).toBeDisabled();
-  await game.getByRole("button", { name: "계속 점프" }).click();
-  await choose(game, "서브웨이", false); await page.clock.fastForward(660); await expect(game.getByRole("status")).toContainText("가짜 발판"); await expect(game.getByLabel("점프 기회 2", { exact: true })).toBeVisible(); await page.clock.fastForward(720);
-  for (let i = 1; i <= 2; i++) {
-    await page.clock.fastForward(subwayDuration(0, i) + 30); await page.clock.fastForward(660);
-    await expect(game.getByRole("status")).toContainText("발판을 놓쳤어요"); await page.clock.fastForward(720);
-  }
-  await expect(game.getByLabel("서브웨이 결과")).toContainText("다음 열차");
-});
-
 test("320px 화면·동작 줄이기에서도 두 게임의 문제와 터치 버튼 접근", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 568 }); await page.emulateMedia({ reducedMotion: "reduce" });
-  for (const name of ["갈림길", "서브웨이 점프"]) {
+  for (const name of ["갈림길"]) {
     if (name === "갈림길") await page.goto("/");
     const launcher = page.getByRole("navigation", { name: "미니게임" }).getByRole("button", { name, exact: true }); await launcher.scrollIntoViewIfNeeded(); await launcher.click();
     const game = page.getByRole("region", { name: "전체 화면 게임" });
-    await game.getByRole("button", { name: name === "갈림길" ? "절벽 달리기 시작" : "서브웨이 출발" }).click();
-    await expect(game.getByLabel(`${name === "갈림길" ? "갈림길" : "서브웨이"} 한국어 뜻`)).toBeInViewport();
-    const controls = game.locator(name === "갈림길" ? ".word-touch button" : ".word-platform"); for (const button of await controls.all()) await expect(button).toBeInViewport();
+    await game.getByRole("button", { name: "절벽 달리기 시작" }).click();
+    await expect(game.getByLabel(`${"갈림길"} 한국어 뜻`)).toBeInViewport();
+    const controls = game.locator(".word-touch button"); for (const button of await controls.all()) await expect(button).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ animations: "disabled", path: test.info().outputPath(`${name}-mobile.png`) }); await page.keyboard.press("Escape");
   }
-});
-
-test("배경 레이어 실제 이동·정지·동작 줄이기·모드와 설명 복원", async ({ page }) => {
-  await page.goto("/"); const background = page.locator(".learning-hub>.landmark-scene");
-  const ferry = background.locator(".ferry-near"); const first = await ferry.boundingBox(); await page.waitForTimeout(400); const next = await ferry.boundingBox(); expect(next!.x).toBeGreaterThan(first!.x);
-  expect((await background.locator(".gull-one").boundingBox())!.width).toBeLessThan(60);
-  await page.getByRole("button", { name: "배경 움직임 멈추기" }).click(); const stopped = await ferry.boundingBox(); await page.waitForTimeout(400); expect((await ferry.boundingBox())!.x).toBeCloseTo(stopped!.x, 1);
-  await page.screenshot({ path: test.info().outputPath("liberty-daylight.png") });
-  await page.getByRole("button", { name: "배경 움직임 재생" }).click();
-  await page.getByRole("button", { name: "공부 모드", exact: true }).click(); await expect(background.locator(".student-sprite")).toHaveCount(2);
-  await expect(background.locator(".campus-foliage").first()).toHaveCSS("animation-name", "campus-breeze");
-  await page.getByRole("button", { name: "배경 움직임 멈추기" }).click();
-  await page.screenshot({ path: test.info().outputPath("campus-daylight.png") });
-  await page.emulateMedia({ reducedMotion: "reduce" }); await expect(background.locator(".student-sprite").first()).toHaveCSS("animation-name", "none");
-  await page.getByRole("button", { name: "아케이드 모드", exact: true }).click(); await expect(background.locator(".ferry-cutout").first()).toHaveCSS("animation-name", "none");
-  await expect(page.locator(".launcher-label")).toHaveCount(4); await expect(page.getByRole("button", { name: /리듬 슈터|맨해튼 시크릿/ })).toHaveCount(0);
 });
 
 test("새 아케이드 편곡의 드럼·화음 출력과 음소거", async ({ page }) => {

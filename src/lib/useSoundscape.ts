@@ -157,7 +157,7 @@ export function useSoundscape(mode: OsMode, quiet: boolean, intensity = 1, game:
   }, [mode, quiet, muted, started, note, drum, stopNotes, stopEffects, intensity, game, loopStatus]);
   useEffect(() => () => { stopNotes(); stopEffects(); void engine.current?.context.close(); engine.current = null; }, [stopNotes, stopEffects]);
   useEffect(() => {
-    const apply = () => document.querySelectorAll("audio,video").forEach(el => { (el as HTMLMediaElement).muted = muted; });
+    const apply = () => document.querySelectorAll('audio,video:not([data-background-video])').forEach(el => { (el as HTMLMediaElement).muted = muted; });
     apply(); const observer = new MutationObserver(apply); observer.observe(document.body, {childList:true,subtree:true});
     return () => observer.disconnect();
   }, [muted]);

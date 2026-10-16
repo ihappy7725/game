@@ -23,7 +23,7 @@ export function RunningWorld(props: Props) {
     function polygon(points: { x: number; y: number }[], color: string) {
       context!.fillStyle = color; context!.beginPath(); points.forEach((p, i) => i ? context!.lineTo(p.x, p.y) : context!.moveTo(p.x, p.y)); context!.closePath(); context!.fill();
     }
-    const branch = (z: number, side: number) => side * Math.max(0, z - 22) * .13;
+    const branch = (z: number, side: number) => side * Math.max(0, z - 16) * .6;
     function render(now = 0) {
       if (!alive) return;
       const data = latest.current;
@@ -35,16 +35,11 @@ export function RunningWorld(props: Props) {
       ctx.fillStyle = sky; ctx.fillRect(0, 0, width, height);
       if (panorama.complete && panorama.naturalWidth) {
         // 원경은 위쪽에만 사용하고 가까운 지형은 실시간으로 그립니다.
-        ctx.drawImage(panorama, 0, 0, panorama.naturalWidth, panorama.naturalHeight * .46, 0, 0, width, height * .4);
+        if(data.scene==="cab")ctx.drawImage(panorama, 0, 0, panorama.naturalWidth, panorama.naturalHeight * .46, 0, 0, width, height * .4);
+        else ctx.drawImage(panorama,0,0,panorama.naturalWidth,panorama.naturalHeight,0,0,width,height);
       }
       const isCab = data.scene === "cab";
-      if (!isCab) {
-        for (let i = 0; i < 8; i++) {
-          const x = (i * .17 % 1) * width; const peak = height * (.16 + (i % 3) * .04);
-          polygon([{ x: x - width * .1, y: height * .43 }, { x, y: peak }, { x: x + width * .13, y: height * .43 }], ["#9cc7bb", "#8eb9ad", "#79ada7"][i % 3]);
-        }
-        ctx.fillStyle = "#509caa"; ctx.fillRect(0, height * .62, width, height * .38);
-      }
+      if (isCab) { ctx.fillStyle="#b9c4b4";ctx.fillRect(0,height*.28,width,height*.72); }
       for (let z = 96; z > 3; z -= 2) {
         const near = Math.max(3, z - 2);
         const stripe = Math.floor((z + travel.current) / 3) % 2 === 0;
@@ -61,26 +56,39 @@ export function RunningWorld(props: Props) {
           if (isCab && stripe) for (const lane of [-1.1, 1.1]) polygon([project(lane - .025, z), project(lane + .025, z), project(lane + .025, near), project(lane - .025, near)], "#f5f5d8");
         }
       }
-      // 양옆의 입체 건물/절벽이 카메라를 향해 다가와 뒤로 지나갑니다.
-      const objects = Array.from({ length: 42 }, (_, i) => ({ i, z: 4 + ((i * 5.7 - travel.current) % 100 + 100) % 100 })).sort((a, b) => b.z - a.z);
-      for (const { i, z } of objects) {
-        const side = i % 2 ? 1 : -1;
-        const x = side * (isCab ? 4.1 + (i % 3) * .65 : 5 + (i % 4) * 1.8);
-        const base = project(x, z); const top = project(x, z, isCab ? 4 + i % 5 : 3 + i % 7);
-        const w = base.scale * width * (isCab ? .13 : .12);
-        if (base.x + w < -width * .2 || base.x - w > width * 1.2) continue;
-        const tone = isCab ? ["#c78468", "#ead5b0", "#adc5bc", "#d4aa7c"][i % 4] : ["#c38a5e", "#b97c54", "#d39c69"][i % 3];
-        const offset = w * side * .28;
-        polygon([{ x: base.x - w / 2, y: base.y }, { x: top.x - w / 2, y: top.y }, { x: top.x + w / 2, y: top.y }, { x: base.x + w / 2, y: base.y }], tone);
-        polygon([{ x: top.x + w / 2, y: top.y }, { x: top.x + w / 2 + offset, y: top.y - w * .17 }, { x: base.x + w / 2 + offset, y: base.y - w * .17 }, { x: base.x + w / 2, y: base.y }], isCab ? "#8c8b7e" : "#987552");
-        polygon([{ x: top.x - w / 2, y: top.y }, { x: top.x - w / 2 + offset, y: top.y - w * .17 }, { x: top.x + w / 2 + offset, y: top.y - w * .17 }, { x: top.x + w / 2, y: top.y }], isCab ? "#e4d9b6" : "#90ac60");
-        if (isCab && w > 6) {
-          const floors = 3 + i % 4; const h = base.y - top.y;
-          ctx.fillStyle = i % 3 ? "#4e7882" : "#fff0b6";
-          for (let row = 0; row < floors; row++) for (let col = 0; col < 3; col++) ctx.fillRect(top.x - w * .4 + col * w * .29, top.y + h * (.1 + row / floors), w * .16, h / floors * .43);
-          ctx.fillStyle = i % 2 ? "#367d73" : "#dda94b"; ctx.fillRect(base.x - w * .52, base.y - h * .13, w * 1.04, h * .06);
-        } else if (!isCab) {
-          ctx.fillStyle = "#e6bd8a80"; for (let line = 1; line < 5; line++) ctx.fillRect(top.x - w / 2, top.y + (base.y - top.y) * line / 5, w, Math.max(1, w * .015));
+      // 건물의 앞면·거리 쪽 측면·지붕을 실제 깊이 좌표로 투영합니다.
+      const objects = Array.from({ length: 34 }, (_, i) => ({ i, z: 4 + ((i * 6.1 - travel.current) % 100 + 100) % 100 })).sort((a, b) => b.z - a.z);
+      function texture(points: {x:number;y:number}[], side:number) {
+        if(!panorama.complete || !panorama.naturalWidth)return;
+        const sx=panorama.naturalWidth*(side<0?.01:.79), sy=panorama.naturalHeight*.17, sw=panorama.naturalWidth*.2, sh=panorama.naturalHeight*.48;
+        for(const triangle of [[0,1,2],[0,2,3]]) {
+          ctx.save();ctx.beginPath();triangle.forEach((i,j)=>j?ctx.lineTo(points[i].x,points[i].y):ctx.moveTo(points[i].x,points[i].y));ctx.closePath();ctx.clip();ctx.globalAlpha=.88;
+          const [p0,p1,p2,p3]=points;
+          if(triangle[1]===1)ctx.transform(p1.x-p0.x,p1.y-p0.y,p2.x-p1.x,p2.y-p1.y,p0.x,p0.y);
+          else ctx.transform(p2.x-p3.x,p2.y-p3.y,p3.x-p0.x,p3.y-p0.y,p0.x,p0.y);
+          ctx.drawImage(panorama,sx,sy,sw,sh,0,0,1,1);ctx.restore();
+        }
+      }
+      for (const {i,z} of objects) {
+        const side=i%2?1:-1;
+        const inner=side*(isCab?3.8:14+(i%3)*4), outer=inner+side*(isCab?2.8:2.1);
+        const depth=isCab?4.5:4; const roof=isCab?4.5+i%5:1+i%3;const floor=isCab?0:-14;
+        const a=project(inner,z,roof),b=project(inner,z+depth,roof),c=project(inner,z+depth,floor),d=project(inner,z,floor);
+        const e=project(outer,z,roof),f=project(outer,z+depth,roof),g=project(outer,z,floor);
+        const visible=[a,b,c,d,e,f,g].some(p=>p.x>=-width*.2&&p.x<=width*1.2);
+        if(!visible)continue;
+        const tone=isCab?["#c88d72","#e6d1ac","#c0cec0","#d9b686"][i%4]:["#c08859","#d6a06b","#b97f57"][i%3];
+        polygon([a,b,c,d],tone);polygon([a,e,g,d],isCab?"#a58d7b":"#ad764f");polygon([a,b,f,e],isCab?"#c0b9a0":"#a1b864");
+        if(isCab && Math.abs(a.x-b.x)>10) { texture([a,b,c,d],side);texture([e,a,d,g],side); }
+        if(isCab) {
+          polygon([project(inner,z,.7),project(inner,z+depth,.7),project(inner,z+depth,.98),project(inner,z,.98)],i%2?"#368777":"#e5ba62");
+          // 가로등과 나무도 깊이에 따라 자연스럽게 커지며 지나갑니다.
+          const lamp=project(inner-side*.35,z+2,0),lampTop=project(inner-side*.35,z+2,2.5);
+          ctx.strokeStyle="#476d64";ctx.lineWidth=Math.max(1,lamp.scale*2);ctx.beginPath();ctx.moveTo(lamp.x,lamp.y);ctx.lineTo(lampTop.x,lampTop.y);ctx.stroke();
+          ctx.fillStyle="#fff0ae";ctx.beginPath();ctx.arc(lampTop.x,lampTop.y,Math.max(1,lampTop.scale*5),0,Math.PI*2);ctx.fill();
+          if(i%3===0){const tree=project(inner-side*.55,z+3,1.7);ctx.fillStyle="#52956c";ctx.beginPath();ctx.ellipse(tree.x,tree.y,tree.scale*width*.027,tree.scale*height*.075,0,0,Math.PI*2);ctx.fill();}
+        } else {
+          for(let layer=0;layer<6;layer++) {const elevation=roof-(roof-floor)*(layer+1)/7;polygon([project(inner,z,elevation),project(inner,z+depth,elevation),project(inner,z+depth,elevation-.08),project(inner,z,elevation-.08)],"#ecc39080");}
         }
       }
       const haze = ctx.createLinearGradient(0, height * .25, 0, height * .55); haze.addColorStop(0, "#e5f4dd80"); haze.addColorStop(1, "#e5f4dd00"); ctx.fillStyle = haze; ctx.fillRect(0, height * .25, width, height * .3);
