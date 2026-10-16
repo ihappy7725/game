@@ -1,0 +1,48 @@
+/* 밝은 책상과 경쟁 화면: 기존 계정·저장 로직 위에 같은 재질을 적용합니다. */
+.hub-drawer.drawer-desk { width:min(980px,100%); background:linear-gradient(140deg,#fffff7,#eff7ed); color:#315d60; color-scheme:light; }
+.drawer-desk h2,.drawer-desk h3,.drawer-desk h4 { color:#2d6260; }
+.drawer-desk [class*="text-white/"] { color:#687f7a; }
+.drawer-desk [class*="bg-black/"] { background:#ecf3e8; }
+.drawer-desk [class*="border-white/"] { border-color:#ccddd0; }
+.drawer-desk button,.drawer-desk select { background:#fcfff3; color:#386f65; border-color:#bcd6c6; }
+.drawer-desk button:hover:not(:disabled) { background:#ddf0df; }
+.drawer-desk button[aria-pressed=true] { background:#d1ecdd; border-color:#77b9a3; box-shadow:inset 0 0 0 1px #86bbaa; }
+.drawer-desk .text-\[\#ffb4b0\],.drawer-desk [role=alert] { color:#a15446; }
+.drawer-desk .ranking-growth { border-color:#c4ddcc; }
+.desk-instructions,.desk-key-help { font-size:12px; line-height:1.8; color:#668179; }
+.desk-key-help { font-size:10px; }
+.desk-scene { position:relative; height:390px; overflow:hidden; border:2px solid #fff; border-radius:26px; background:linear-gradient(125deg,#e6f0dc,#f8f2d8 60%,#ebd7b8); box-shadow:0 12px 28px #527e6830,inset -30px 0 50px #c6b58438; isolation:isolate; }
+.desk-window { position:absolute; left:13%; top:7%; width:46%; height:50%; border:10px solid #fff7dd; border-radius:55px 55px 4px 4px; background:linear-gradient(#dff7f529,#fff2c21a),url('/backgrounds/study-loop.jpg') center 40%/cover; box-shadow:0 6px 0 #b3a38355,0 15px 35px #4c775433; overflow:hidden; }
+.desk-window:before,.desk-window:after { content:""; position:absolute; background:#fff7dd; }
+.desk-window:before { width:7px; height:100%; left:49%; }.desk-window:after { height:7px; width:100%; top:53%; }
+.desk-wall-light { position:absolute; inset:5% -20% 15% 20%; transform:rotate(-20deg); background:linear-gradient(90deg,transparent,#fff9dc75,transparent); pointer-events:none; }
+.desk-surface { position:absolute; top:48%; left:-3%; right:-3%; bottom:8%; background:repeating-linear-gradient(2deg,transparent 0 32px,#c6985c22 33px 34px),linear-gradient(115deg,#e9c38d,#fbdfad 38%,#dfb179); transform:perspective(400px) rotateX(17deg); box-shadow:0 -4px 0 #ffffdc,0 10px 15px #98734c38; }
+.desk-front { position:absolute; left:0; right:0; bottom:0; height:12%; background:linear-gradient(#c59b64,#ba8c53); box-shadow:inset 0 4px 0 #dcb780; }
+.desk-scene-title { position:absolute; top:10%; right:6%; color:#a08862; font-size:12px; writing-mode:vertical-rl; letter-spacing:3px; }
+.desk-placement-area { position:absolute; top:48%; bottom:17%; left:10%; right:10%; }
+.drawer-desk .desk-placed-item { position:absolute; width:90px; height:95px; translate:-50% -70%; padding:0; border:0; border-radius:14px; background:transparent!important; box-shadow:none; touch-action:none; cursor:grab; outline-offset:4px; }
+.drawer-desk .desk-placed-item[aria-pressed=true] { outline:2px dashed #4d9c90; box-shadow:0 0 24px #ffffcc99; }
+.desk-placed-item:active { cursor:grabbing; }.desk-placed-item>span:last-child { position:absolute; top:100%; left:50%; translate:-50% 0; font-size:9px; white-space:nowrap; padding:2px 8px; background:#ffffe6e8; border:1px solid #c4d9c4; border-radius:20px; opacity:0; }
+.desk-placed-item:focus-visible>span:last-child,.desk-placed-item[aria-pressed=true]>span:last-child { opacity:1; }
+.desk-object-art { display:block; width:100%; height:100%; overflow:visible; filter:drop-shadow(2px 7px 3px #5a634335); }
+.desk-object-emoji { display:grid; place-items:center; height:100%; font-size:57px; filter:drop-shadow(3px 7px 3px #615a3c35); }
+.desk-inventory-art { display:block; flex-shrink:0; width:47px; height:47px; }.desk-inventory-art .desk-object-emoji { font-size:32px; }
+.desk-room fieldset { border-color:#ccddca; }.desk-room input[type=range] { accent-color:#3b9c86; }.desk-room input[type=checkbox] { accent-color:#438f7d; }
+.gacha-capsule { position:relative; width:155px; height:177px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; margin:22px auto 35px; padding-bottom:17px; background:linear-gradient(130deg,#ffe7a4,#eeb75c); border:4px solid #fff8d4; border-radius:60px 60px 30px 30px; box-shadow:0 7px 0 #c58f4a,0 17px 32px #b48b3a33,inset 8px 5px 0 #fff7c154; }
+.gacha-capsule>span { position:absolute; top:18px; width:75px; height:75px; display:grid; place-items:center; font-size:45px; color:#fff7d4; border:3px solid #fffbdc; border-radius:50%; background:radial-gradient(at 25% 20%,#c6f7df,#69bba7); box-shadow:inset 0 -4px 10px #387c7966; }.gacha-capsule b { font-size:24px; color:#825f33; }.gacha-capsule small { font-size:9px; color:#8c6c44; }
+.capsule-opening { animation:desk-capsule .3s ease-in-out infinite alternate; }
+.gacha-result-art { width:90px; height:90px; margin:auto; }.gacha-duplicate { margin-top:8px; border-radius:20px; padding:5px 10px; background:#dfedda; color:#4a8874; font-size:10px; }
+.gacha-panel [aria-label="뽑기 결과"] li { text-align:center; animation:desk-reveal .45s ease-out both; }.gacha-panel [aria-label="뽑기 결과"] li:nth-child(2n) { animation-delay:.1s; }
+.ranking-categories,.game-rankings>nav { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }.ranking-categories button,.game-rankings>nav button { padding:10px 18px; border:1px solid #bfd9c7; border-radius:22px; font-size:12px; font-weight:700; }
+.ranking-filters { display:flex; gap:14px; margin:15px 0; }.ranking-filters label { font-size:11px; flex:1; max-width:220px; }.ranking-filters select { display:block; width:100%; border:1px solid #c7dacc; border-radius:12px; padding:10px; margin-top:5px; }
+.game-rankings>p,.game-ranking-results>p { font-size:12px; line-height:1.8; margin:15px 0; }.game-rankings .ranking-note { font-size:10px; color:#6a8379; }
+.game-ranking-results ol { display:grid; gap:8px; }.game-ranking-results li { display:flex; align-items:center; gap:14px; background:#f7fcef; border:1px solid #d4e2ce; border-radius:16px; padding:15px; font-size:13px; }.game-ranking-results li>span { flex:1; min-width:0; overflow-wrap:anywhere; }.game-ranking-results li[aria-current=true] { background:#d7efdc; border-color:#8abda1; }.game-ranking-results strong { white-space:nowrap; color:#288474; }
+.ranked-save { max-width:580px; margin:18px auto; padding:16px; border:1px solid #afcec2; border-radius:18px; background:#ffffeeeb; color:#396e68; text-align:center; }
+.ranked-save p { font-size:12px; line-height:1.8; }.ranked-save small { display:block; font-size:10px; margin-top:8px; line-height:1.7; }.ranked-save button { margin:10px 0; padding:10px 18px; background:#daf0df; border:1px solid #9fc9b2; border-radius:12px; font-size:12px; font-weight:700; }.ranked-save button:disabled { opacity:.6; }
+@keyframes desk-capsule { to { rotate:4deg; translate:0 -3px; } }
+@keyframes desk-reveal { from { opacity:0; transform:translateY(16px) scale(.9); } to { opacity:1; transform:none; } }
+@media(max-width:700px) {
+  .hub-drawer.drawer-desk { padding:46px 15px 28px; }.desk-scene { height:290px; border-radius:18px; }.desk-window { border-width:6px; }.desk-placement-area { left:13%; right:13%; }.drawer-desk .desk-placed-item { width:65px; height:70px; }.desk-object-emoji { font-size:42px; }.desk-scene-title { font-size:8px; right:4%; }.desk-instructions { font-size:10px; }.desk-key-help { font-size:9px; }
+  .ranking-categories button,.game-rankings>nav button { padding:8px 12px; font-size:10px; }.game-ranking-results li { gap:8px; font-size:11px; padding:12px; }.gacha-capsule { scale:.85; margin:0 auto 16px; }.ranked-save { padding:12px; }.ranked-save p { font-size:11px; }
+}
+@media(prefers-reduced-motion:reduce) { .capsule-opening,.gacha-panel li { animation:none!important; } }

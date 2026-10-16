@@ -83,6 +83,7 @@ test("새 아케이드 편곡의 드럼·화음 출력과 음소거", async ({ p
     const Native = window.AudioContext;
     const probe = { buffers: 0, voices: 0, master: null as GainNode | null };
     class AudioProbe extends Native {
+      constructor() { super(); probe.master = null; }
       createGain() { const gain = super.createGain(); if (!probe.master) probe.master = gain; return gain; }
       createOscillator() { probe.voices++; return super.createOscillator(); }
       createBufferSource() { probe.buffers++; return super.createBufferSource(); }

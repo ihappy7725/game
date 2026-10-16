@@ -6,6 +6,7 @@ test("엔진 저음·발걸음 필터·정답 선율·박수·글로벌 음소�
     const Native = window.AudioContext;
     const probe = { frequencies: [] as number[], filters: [] as { type: string; hz: number }[], master: null as GainNode | null };
     class AudioProbe extends Native {
+      constructor() { super(); probe.master = null; }
       createGain() { const gain = super.createGain(); if (!probe.master) probe.master = gain; return gain; }
       createOscillator() { const node = super.createOscillator(); const start = node.start.bind(node); node.start = (when?: number) => { probe.frequencies.push(node.frequency.value); start(when); }; return node; }
       createBiquadFilter() { const filter = super.createBiquadFilter(); const connect = filter.connect.bind(filter); filter.connect = ((...args: Parameters<typeof connect>) => { probe.filters.push({ type: filter.type, hz: filter.frequency.value }); return connect(...args); }) as typeof filter.connect; return filter; }
@@ -21,5 +22,5 @@ test("엔진 저음·발걸음 필터·정답 선율·박수·글로벌 음소�
   await expect.poll(() => page.evaluate(() => (window as unknown as { gameAudioProbe: { filters: { type: string; hz: number }[] } }).gameAudioProbe.filters.some(filter => filter.type === "bandpass" && filter.hz === 1600))).toBe(true);
   await expect.poll(() => page.evaluate(() => (window as unknown as { gameAudioProbe: { frequencies: number[] } }).gameAudioProbe.frequencies.some(hz => Math.abs(hz - 1318.51) < 1))).toBe(true);
   await page.getByRole("region", { name: "전체 화면 게임" }).getByRole("button", { name: "소리 끄기", exact: true }).click();
-  expect(await page.evaluate(() => (window as unknown as { gameAudioProbe: { master: GainNode } }).gameAudioProbe.master.gain.value)).toBe(0);
+  await expect.poll(() => page.evaluate(() => (window as unknown as { gameAudioProbe: { master: GainNode } }).gameAudioProbe.master.gain.value)).toBe(0);
 });

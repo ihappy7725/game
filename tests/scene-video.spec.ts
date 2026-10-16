@@ -11,8 +11,8 @@ test("합성 테스트 영상의 실제 무음 반복 재생·수동 정지·모
   await expect(page.locator(".learning-hub>.landmark-scene")).toHaveAttribute("data-scene-kind", "video");
   await expect.poll(() => page.evaluate(() => document.querySelector<HTMLVideoElement>("video.scene-video")?.currentTime ?? -1)).toBeGreaterThan(.05);
   expect(await element.evaluate(el => (el as HTMLVideoElement).muted && (el as HTMLVideoElement).loop && (el as HTMLVideoElement).playsInline)).toBe(true);
-  await page.getByRole("button", { name: "배경 움직임 멈추기" }).click(); await expect.poll(() => element.evaluate(el => (el as HTMLVideoElement).paused)).toBe(true);
+  await page.getByRole("button", { name: "동기부여", exact: true }).click(); await expect.poll(() => element.evaluate(el => (el as HTMLVideoElement).paused)).toBe(true);
   const time = await element.evaluate(el => (el as HTMLVideoElement).currentTime); await page.waitForTimeout(200); expect(await element.evaluate(el => (el as HTMLVideoElement).currentTime)).toBe(time);
-  await page.getByRole("button", { name: "배경 움직임 재생" }).click(); await page.getByRole("button", { name: "공부 모드", exact: true }).click(); await expect(element).toHaveCount(1);
+  await page.getByRole("button", { name: "패널 닫기", exact: true }).click(); await page.getByRole("button", { name: "공부 모드", exact: true }).click(); await expect(element).toHaveCount(1);
   await expect.poll(() => element.evaluate(el => (el as HTMLVideoElement).paused)).toBe(false); await page.emulateMedia({ reducedMotion: "reduce" }); await expect.poll(() => element.evaluate(el => (el as HTMLVideoElement).paused)).toBe(true);
 });

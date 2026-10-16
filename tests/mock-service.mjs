@@ -35,5 +35,7 @@ createServer(async (req, res) => {
   }));
   if (path === "/api/game/inventory") return res.end(JSON.stringify({ items: [] }));
   if (path === "/api/game/leaderboard") return res.end(JSON.stringify({ rows: [], my_rank: null }));
+  if (path === "/api/game/records/leaderboard") return res.end(JSON.stringify({ rows: [], my_rank: null, week_start: "2026-10-11T15:00:00Z", week_end: "2026-10-18T15:00:00Z", verification: "client_reported" }));
+  if (path === "/api/game/records") return res.end(JSON.stringify({ saved: true, created: true, verification: "client_reported" }));
   res.end(JSON.stringify({ status: "ok", message: "로컬 모의 서버", supabase_enabled: true }));
 }).listen(3101, "localhost");

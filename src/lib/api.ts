@@ -276,6 +276,21 @@ export function fetchWeeklyLeaderboard(accessToken: string, signal?: AbortSignal
   }).then((res) => unwrap<WeeklyLeaderboard>(res));
 }
 
+export type RankedGame = "cab" | "fork" | "pop";
+export type RankedRecord = { run_id: string; game_id: RankedGame; difficulty: number; stage: number; score: number; elapsed_ms: number };
+export type GameLeaderboard = {
+  rows: { rank: number; display_name: string; score: number; elapsed_ms: number; is_me: boolean }[];
+  my_rank: number | null; week_start: string; week_end: string; verification: "client_reported";
+};
+export function fetchGameLeaderboard(accessToken: string, game: RankedGame, difficulty: number, stage: number, signal?: AbortSignal) {
+  const query = new URLSearchParams({ game_id: game, difficulty: String(difficulty), stage: String(stage), limit: "20" });
+  return fetch(`${BASE_URL}/api/game/records/leaderboard?${query}`, { headers: authHeaders(accessToken), cache: "no-store", signal }).then(res => unwrap<GameLeaderboard>(res));
+}
+/** 명시적 저장만 수행합니다. 판 식별자를 재사용하므로 서버가 중복 요청을 구분합니다. */
+export function saveRankedRecord(accessToken: string, record: RankedRecord) {
+  return fetch(`${BASE_URL}/api/game/records`, { method: "POST", headers: { ...authHeaders(accessToken), "Content-Type": "application/json" }, body: JSON.stringify(record) }).then(res => unwrap<{ saved: boolean; created: boolean; run_id: string; verification: "client_reported" }>(res));
+}
+
 /** 섹션별 집계 + 점수 추세 (히스토리 대시보드 상단) */
 export function fetchStats(
   accessToken: string,

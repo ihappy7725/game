@@ -31,6 +31,7 @@ from fastapi.responses import JSONResponse
 from openai import OpenAI, OpenAIError
 from pydantic import BaseModel, Field
 from supabase import Client, create_client
+from game_records import register_game_records
 
 # .env 파일의 환경 변수 로드
 load_dotenv()
@@ -1455,6 +1456,9 @@ async def list_mistakes(
         ]
     )
 
+
+# 기존 인증·코인 로직을 공유하고 게임별 기록은 별도 API로 관리합니다.
+register_game_records(app, _require_supabase, _require_user_id)
 
 #: 연속으로 이만큼 맞히면 보스전 출제에서 제외한다
 MISTAKE_RESOLVE_AT = 2

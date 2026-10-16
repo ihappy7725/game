@@ -15,16 +15,27 @@ type Question = { prompt: string; correct_answer: string; source?: string };
 const buttonClass = "rounded-xl border border-violet-200/25 px-4 py-3 hover:bg-white/10 disabled:opacity-40";
 export function MemoryBossRaid() {
   const { auth } = useGameState();
-  if(auth.status === "loading") return <p role="status">로그인 상태 확인 중…</p>;
+  if(auth.status === "loading") return <MemoryLobby loading message="로그인 상태 확인 중…"/>;
   return auth.status === "signed-in" ? <AccountBoss key={auth.userId} userId={auth.userId} /> : <BossGame questions={VOCAB.slice(0,6).map(q => ({ prompt:q.word, correct_answer:q.synonym }))} />;
 }
 function AccountBoss({ userId }: { userId: string }) {
   const resource = useGameResource(userId, fetchReviewMistakes);
   const [practice, setPractice] = useState(false);
   if (practice) return <BossGame questions={VOCAB.slice(0,6).map(q => ({ prompt:q.word, correct_answer:q.synonym }))} />;
-  if (resource.loading) return <p role="status">나의 오답을 불러오는 중…</p>;
-  if (resource.error || !resource.data?.items.length) return <section className="space-y-5"><h2 className="text-2xl font-bold">메모리 카드</h2><p role={resource.error ? "alert" : "status"}>{resource.error ?? "복습할 오답이 없습니다. 새로운 문제에 도전하거나 예제 보스를 연습하세요."}</p><button className={buttonClass} onClick={resource.reload}>오답 새로고침</button><button className={buttonClass} onClick={() => setPractice(true)}>예제 카드 연습</button></section>;
+  if (resource.loading) return <MemoryLobby loading message="나의 오답을 불러오는 중…"/>;
+  if (resource.error || !resource.data?.items.length) return <MemoryLobby error={Boolean(resource.error)} message={resource.error ?? "아직 복습할 오답이 없어요. 새로운 문제에 도전하거나 예제 카드로 가볍게 시작해 보세요."} onReload={resource.reload} onPractice={() => setPractice(true)}/>;
   return <BossGame questions={resource.data.items} userId={userId} />;
+}
+function MemoryLobby({ loading = false, error = false, message, onReload, onPractice }: {
+  loading?: boolean; error?: boolean; message: string; onReload?: () => void; onPractice?: () => void;
+}) {
+  return <section className="memory-lobby arcade-art-game" aria-label="메모리 카드 대기실">
+    <div className="memory-lobby-panel"><span className="memory-lobby-emblem" aria-hidden="true">✦</span><p className="memory-eyebrow">한 장씩, 더 오래 기억하도록</p><h2>메모리 카드</h2>
+      <p className="memory-lobby-message" role={error ? "alert" : "status"}>{message}</p>
+      {!loading ? <div className="memory-lobby-actions"><button className="word-primary" onClick={onPractice}>예제 카드 연습</button><button className="memory-refresh" onClick={onReload}>오답 새로고침</button></div> : <span className="memory-loading" aria-hidden="true">● ● ●</span>}
+      <small>{loading ? "잠시만 기다려 주세요" : "예제 연습은 개인 오답과 코인에 영향을 주지 않아요."}</small>
+    </div>
+  </section>;
 }
 function BossGame({ questions, userId }: { questions: Question[]; userId?: string }) {
   const [phase,setPhase] = useState<"ready"|"front"|"back"|"over">("ready");

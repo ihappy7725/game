@@ -26,7 +26,7 @@ test("실제 보드 교환·점수/효과음·일시정지·시간 종료와 재
   await page.addInitScript(() => window.addEventListener("toefl-game-cue", e => (window as unknown as { cueProbe: (s: string) => void }).cueProbe((e as CustomEvent).detail)));
   await start(page); const buttons = page.locator(".pop-tile"); await expect(buttons).toHaveCount(49);
   const board = await buttons.evaluateAll(elements => elements.map(el => ({ kind: Number(el.className.match(/tile-(\d)/)![1]) })));
-  const move = popLegalMove(board)!; expect(move).not.toBeNull(); await buttons.nth(move[0]).click(); await buttons.nth(move[1]).click();
+  const move = popLegalMove(board)!; expect(move).not.toBeNull(); await buttons.nth(move[0]).click(); await buttons.nth(move[1]).click(); await expect(page.locator(".word-pop")).toHaveAttribute("data-phase", "swap"); await page.clock.fastForward(230);
   await expect(page.getByLabel("워드 팝 점수")).not.toHaveText("0점"); expect(cues.some(cue => ["pop", "correct"].includes(cue))).toBe(true);
   for (let i = 0; i < 15 && await buttons.first().isDisabled(); i++) await page.clock.fastForward(450);
   await page.getByRole("button", { name: "일시정지", exact: true }).click(); const time = await page.getByLabel("워드 팝 남은 시간").textContent(); await page.clock.fastForward(60_000); await expect(page.getByLabel("워드 팝 남은 시간")).toHaveText(time!); await expect(buttons.first()).toBeDisabled();
@@ -42,10 +42,12 @@ test("메모리 자가 정답 소리·아쉬운 결과·브라우저 신기록 �
   for (let i = 0; i < 6; i++) { await page.getByRole("button", { name: "정답 뒤집기", exact: true }).click(); await page.getByRole("button", { name: "기억했어요", exact: true }).click(); }
   await expect(page.locator(".outcome-good")).toContainText("개인 신기록"); await expect(page.locator(".outcome-good .outcome-burst>span")).toHaveCount(18); expect(await page.evaluate(() => localStorage.getItem("toefl-best-v1:cards:0"))).toBe("600");
 });
-test("실시간 원근 지형 이동·정지와 영상 미등록/실패 포스터", async ({ page }) => {
-  await page.goto("/"); const scene = page.locator(".learning-hub>.landmark-scene"); await expect(scene).toHaveAttribute("data-scene-kind", "poster"); await expect(scene.locator(".scene-plane")).toHaveCount(0);
+test("게임 실제 영상 이동·정지와 영상 파일 실패 포스터", async ({ page }) => {
+  await page.goto("/"); const scene = page.locator(".learning-hub>.landmark-scene"); await expect(scene).toHaveAttribute("data-scene-kind", "video"); await expect(scene.locator(".scene-plane")).toHaveCount(0);
   await page.getByRole("navigation", { name: "미니게임" }).getByRole("button", { name: "갈림길", exact: true }).click(); await page.getByRole("button", { name: "절벽 달리기 시작", exact: true }).click();
-  const canvas = page.locator(".running-world"); const before = Number(await canvas.getAttribute("data-distance")); await page.waitForTimeout(300); expect(Number(await canvas.getAttribute("data-distance"))).toBeGreaterThan(before);
-  await page.getByRole("button", { name: "일시정지", exact: true }).click(); const paused = await canvas.getAttribute("data-distance"); await page.waitForTimeout(300); expect(await canvas.getAttribute("data-distance")).toBe(paused); await page.keyboard.press("Escape");
+  const video = page.locator(".game-backdrop video");
+  await expect.poll(() => video.evaluate(el => (el as HTMLVideoElement).currentTime)).toBeGreaterThan(.05);
+  await page.getByRole("button", { name: "일시정지", exact: true }).click(); await expect.poll(() => video.evaluate(el => (el as HTMLVideoElement).paused)).toBe(true);
+  const paused = await video.evaluate(el => (el as HTMLVideoElement).currentTime); await page.waitForTimeout(300); expect(await video.evaluate(el => (el as HTMLVideoElement).currentTime)).toBe(paused); await page.keyboard.press("Escape");
   await page.route("**/backgrounds/scene-videos.json", route => route.fulfill({ json: { arcade: "/backgrounds/invalid.mp4" } })); await page.route("**/backgrounds/invalid.mp4", route => route.fulfill({ contentType: "video/mp4", body: "invalid" })); await page.reload(); await expect(scene).toHaveAttribute("data-scene-kind", "poster");
 });

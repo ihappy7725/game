@@ -3,9 +3,8 @@
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Headphones, Mic, PenLine, BookOpen, CarFront, Split, Bubbles, Ghost, Armchair, Gift, Trophy, Smile, History, Volume2, VolumeX, ArrowLeft, X, Pause, Play } from "lucide-react";
+import { Headphones, Mic, PenLine, BookOpen, CarFront, Split, Bubbles, Ghost, Armchair, Gift, Trophy, Smile, History, Volume2, VolumeX, ArrowLeft, X, Maximize, Minimize } from "lucide-react";
 import { AuthStatus } from "@/components/AuthStatus";
-import { BackendStatus } from "@/components/BackendStatus";
 import { WritingWorkspace } from "@/components/WritingWorkspace";
 import { SpeakingWorkspace } from "@/components/SpeakingWorkspace";
 import { HistoryWorkspace } from "@/components/HistoryWorkspace";
@@ -18,6 +17,8 @@ import { MemoryBossRaid } from "@/components/arcade/MemoryBossRaid";
 import { useOsTheme } from "@/lib/os-theme";
 import { useSoundscape } from "@/lib/useSoundscape";
 import { useProgression } from "@/lib/progression";
+import { useBrowserFullscreen } from "@/lib/useBrowserFullscreen";
+import { GameBackdrop } from "@/components/arcade/GameBackdrop";
 import { LandmarkScene } from "./LandmarkScene";
 import { MotivationStickers, StickerPicker } from "./MotivationStickers";
 import { StudyPractice } from "./StudyPractice";
@@ -44,7 +45,6 @@ export function LearningHub() {
   const progress = useProgression();
   const [game,setGame] = useState<GameId|null>(null);
   const [difficulty,setDifficulty] = useState(0);
-  const [sceneryMoving,setSceneryMoving] = useState(true);
   const [active,setActive] = useState<string|null>(null);
   const [mounted,setMounted] = useState<string[]>([]);
   const [deskTab,setDeskTab] = useState("room");
@@ -55,6 +55,7 @@ export function LearningHub() {
   const dialogRef=useRef<HTMLDivElement>(null);
   const returnFocus=useRef<HTMLElement|null>(null);
   const sound=useSoundscape(mode, Boolean(active==="speaking" || active==="listening"), game ? 0.65 : 1, game === "boss" ? "cards" : game);
+  const fullscreen=useBrowserFullscreen(()=>setGame(null));
   const isDialog=Boolean(drawer || pendingGame);
   useEffect(() => {
     if(active) document.getElementById(`workspace-${active}`)?.focus();
@@ -85,26 +86,26 @@ export function LearningHub() {
   const title=STUDY.find(e=>e.id===active)?.label ?? "학습 기록";
   const closeStudy=()=>{setMounted(mounted.filter(id=>id!==active));setActive(null);};
   return <div className={`learning-hub mode-${mode}`} data-hub-mode={mode}>
-    <LandmarkScene mode={mode} moving={sceneryMoving && !game && !active && !isDialog} />
+    <LandmarkScene mode={mode} moving={!game && !active && !isDialog} />
     <div inert={Boolean(game || isDialog || active)} className="hub-shell">
       <header className="hub-header">
         <Link className="hub-brand" href="/" aria-label="토플 유니온 홈"><Image src="/brand/toefl-union-icon-v2.webp" width={42} height={42} alt="" className="union-brand-icon"/><span>TOEFL <b>Union</b></span></Link>
         <nav className="mode-switch" aria-label="학습 모드"><button aria-pressed={mode==="study"} onClick={()=>changeMode("study")}>공부 모드</button><button aria-pressed={mode==="arcade"} onClick={()=>changeMode("arcade")}>아케이드 모드</button></nav>
-        <div className="hub-account"><button className="hub-history" onClick={()=>openStudy("history")} aria-label="학습 기록"><History size={18}/></button><AuthStatus/><SoundButton sound={sound}/></div>
+        <div className="hub-account"><button className="hub-history" onClick={()=>openStudy("history")} aria-label="학습 기록"><History size={18}/></button><AuthStatus/>{fullscreen.supported ? <button data-fullscreen-control className="sound-button" aria-label={fullscreen.active ? "전체화면 해제" : "전체화면으로 보기"} onClick={fullscreen.toggle} title="전체화면 · Esc로 해제">{fullscreen.active ? <Minimize size={18}/> : <Maximize size={18}/>}</button> : null}<SoundButton sound={sound}/></div>
       </header>
       <main ref={boundsRef} className="hub-main" aria-label="나의 학습 놀이터">
         <nav className="hub-launchers" aria-label={mode==="arcade" ? "미니게임" : "공부 영역"}>{(mode==="arcade" ? GAMES : STUDY).map(entry=><button key={entry.id} aria-label={entry.label} title={`${entry.label} · ${entry.subtitle}`} className={`launcher launcher-${entry.color}`} onClick={()=>mode==="arcade" ? launch(entry.id as GameId) : openStudy(entry.id)}><span className="launcher-art"><entry.Icon size={60} strokeWidth={1.5}/><span className="launcher-glint"/></span><span className="launcher-caption"><span className="launcher-label">{entry.label}</span><span className="launcher-subtitle">{entry.subtitle}</span></span></button>)}</nav>
         <MotivationStickers boundsRef={boundsRef}/>
       </main>
       <aside className="hub-tools" aria-label="나의 도구">{SIDE.map(item=><button key={item.id} onClick={()=>{sound.click();setDrawer(item.id);if(["room","gacha","ranking"].includes(item.id))setDeskTab(item.id);}}><span><item.Icon size={23}/></span><small>{item.label}</small></button>)}</aside>
-      <footer className="hub-footer"><BackendStatus/><GameStatus/><button onClick={()=>setDrawer("growth")} className="growth-chip"><span aria-hidden>🌱</span> {progress.loading ? "성장 확인 중" : progress.error ? "성장 정보 확인" : `${progress.title} · 성장 보기`}</button><button className="scenery-toggle" aria-label={sceneryMoving ? "배경 움직임 멈추기" : "배경 움직임 재생"} aria-pressed={sceneryMoving} onClick={()=>setSceneryMoving(!sceneryMoving)}>{sceneryMoving ? <Pause size={12}/> : <Play size={12}/>} 배경 모션</button><span className="sound-caption" role="status">{sound.unavailable ? "이 브라우저에서 소리를 시작하지 못했어요" : sound.muted ? "소리 꺼짐" : !sound.started ? "첫 클릭으로 배경음악이 시작돼요" : mode==="arcade" ? "♪ 유니온 시티 그루브" : "♪ 조용한 캠퍼스 피아노"}</span></footer>
+      <footer className="hub-footer"><GameStatus/><button onClick={()=>setDrawer("growth")} className="growth-chip"><span aria-hidden>🌱</span> {progress.loading ? "성장 확인 중" : progress.error ? "성장 정보 확인" : `${progress.title} · 성장 보기`}</button><span className="sound-caption" role="status">{sound.unavailable ? "이 브라우저에서 소리를 시작하지 못했어요" : sound.muted ? "소리 꺼짐" : !sound.started ? "첫 클릭으로 배경음악이 시작돼요" : mode==="arcade" ? "♪ 유니온 시티 그루브" : "♪ 조용한 캠퍼스 피아노"}</span>{fullscreen.message ? <span role="status">{fullscreen.message}</span> : null}</footer>
     </div>
     {mounted.map(id=><section key={id} id={`workspace-${id}`} tabIndex={-1} hidden={id!==active || Boolean(game || isDialog)} className={`workspace-page ${id==="reading" || id==="listening" ? "workspace-light" : "workspace-dark"}`} aria-label={STUDY.find(e=>e.id===id)?.label ?? "학습 기록"}>
       <header className="workspace-header"><button className="hub-small-button" onClick={()=>setActive(null)}><ArrowLeft size={16}/> 홈으로</button><h2>{title}</h2><button className="hub-small-button" onClick={closeStudy}><X size={16}/> 닫기</button></header>
       <div className="workspace-content">{id==="writing" ? <WritingWorkspace embedded/> : id==="speaking" ? <SpeakingWorkspace embedded active={id===active && !game && !isDialog}/> : id==="history" ? <HistoryWorkspace embedded/> : <StudyPractice section={id as "reading"|"listening"} active={id===active && !game && !isDialog}/>}</div>
     </section>)}
-    {game ? <div className={`game-fullscreen game-${game}`} ref={gameRef} tabIndex={-1} role="region" aria-label="전체 화면 게임"><div className="game-topline"><span>{game==="boss" ? "오답 플래시카드" : `${["기본","심화","도전"][difficulty]} 난이도`}</span><div className="flex items-center gap-3"><SoundButton sound={sound}/><button aria-label="게임 나가기 Esc" onClick={()=>{setGame(null);returnFocus.current?.focus();}} className="game-exit">나가기 ESC</button></div></div><div className="game-stage">{game==="cab" ? <YellowCabRush difficulty={difficulty}/> : game==="fork" ? <CliffForkRun difficulty={difficulty}/> : game==="pop" ? <WordPop difficulty={difficulty}/> : <MemoryBossRaid/>}</div></div> : null}
-    {<div hidden={!isDialog} className="hub-scrim" onPointerDown={e=>{if(e.target===e.currentTarget){setDrawer(null);setPendingGame(null);}}}><div ref={dialogRef} role="dialog" aria-modal="true" aria-label={pendingGame ? "게임 난이도 선택" : SIDE.find(s=>s.id===drawer)?.label ?? "나의 성장과 도전"} tabIndex={-1} className={`hub-drawer ${drawer && ["room","gacha","ranking"].includes(drawer) ? "drawer-dark" : ""}`}><button className="drawer-close" aria-label="패널 닫기" onClick={()=>{setDrawer(null);setPendingGame(null);}}><X size={22}/></button>
+    {game ? <div className={`game-fullscreen game-${game}`} ref={gameRef} tabIndex={-1} role="region" aria-label="전체 화면 게임"><GameBackdrop game={game === "boss" ? "cards" : game}/><div className="game-topline"><span>{game==="boss" ? "오답 플래시카드" : `${["기본","심화","도전"][difficulty]} 난이도`}</span><div className="flex items-center gap-3"><SoundButton sound={sound}/><button aria-label="게임 나가기 Esc" onClick={()=>{setGame(null);returnFocus.current?.focus();}} className="game-exit">나가기 ESC</button></div></div><div className="game-stage">{game==="cab" ? <YellowCabRush difficulty={difficulty}/> : game==="fork" ? <CliffForkRun difficulty={difficulty}/> : game==="pop" ? <WordPop difficulty={difficulty}/> : <MemoryBossRaid/>}</div></div> : null}
+    {<div hidden={!isDialog} className="hub-scrim" onPointerDown={e=>{if(e.target===e.currentTarget){setDrawer(null);setPendingGame(null);}}}><div ref={dialogRef} role="dialog" aria-modal="true" aria-label={pendingGame ? "게임 난이도 선택" : SIDE.find(s=>s.id===drawer)?.label ?? "나의 성장과 도전"} tabIndex={-1} className={`hub-drawer ${drawer && ["room","gacha","ranking"].includes(drawer) ? "drawer-desk" : ""}`}><button className="drawer-close" aria-label="패널 닫기" onClick={()=>{setDrawer(null);setPendingGame(null);}}><X size={22}/></button>
       {pendingGame ? <section><p className="hub-eyebrow">조금 더 높은 곳으로</p><h2 className="mt-3 text-2xl font-bold">어떤 도전을 할까요?</h2><p className="my-4 text-sm">책상과 주간 랭킹으로 열린 난이도입니다.</p><div className="space-y-3">{["기본","심화","도전"].map((label,i)=><button key={label} disabled={i>progress.level} className="difficulty-choice" onClick={()=>{sound.click();setDifficulty(i);setGame(pendingGame);setPendingGame(null);}}>{i>progress.level ? "🔒" : "✦"} {label}<small>{["여유 있게 연습","더 빠른 갈림길 · 미션 단어 4개","최고 속도 · 미션 단어 5개"][i]}</small></button>)}</div></section> : drawer==="motivation" ? <StickerPicker/> : drawer==="growth" ? <ProgressPanel/> : null}
       <div hidden={!drawer || !["room","gacha","ranking"].includes(drawer)}><h2 className="mb-6 text-2xl font-bold">{SIDE.find(s=>s.id===drawer)?.label}</h2><DormWorkspace tab={deskTab} onTabChange={setDeskTab}/>{drawer==="ranking" ? <div className="ranking-growth"><ProgressPanel/></div> : null}</div>
     </div></div>}

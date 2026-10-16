@@ -32,16 +32,16 @@ test("실제 Web Audio 합성·모드 변경·소리 저장과 로컬 음원 음
     Object.assign(window,{AudioContext:Probe,audioProbes:contexts});
   });
   await page.goto("/");await page.getByRole("button",{name:"공부 모드",exact:true}).click();
-  await expect.poll(()=>page.evaluate(()=>(window as unknown as {audioProbes:{frequencies:number[]}[]}).audioProbes[0]?.frequencies.length??0)).toBeGreaterThan(3);
+  await expect.poll(()=>page.evaluate(()=>(window as unknown as {audioProbes:{frequencies:number[]}[]}).audioProbes.at(-1)?.frequencies.length??0)).toBeGreaterThan(3);
   const rms=await page.evaluate(async()=>{
-    const {context,gains}=(window as unknown as {audioProbes:{context:AudioContext;gains:GainNode[]}[]}).audioProbes[0];
+    const {context,gains}=(window as unknown as {audioProbes:{context:AudioContext;gains:GainNode[]}[]}).audioProbes.at(-1)!;
     const analyser=context.createAnalyser();gains[0].connect(analyser);analyser.connect(context.destination);
     const values=new Float32Array(analyser.fftSize);let peak=0;
     for(let i=0;i<12;i++){await new Promise(resolve=>setTimeout(resolve,80));analyser.getFloatTimeDomainData(values);peak=Math.max(peak,Math.sqrt(values.reduce((sum,value)=>sum+value*value,0)/values.length));}
     analyser.disconnect();return peak;
   });expect(rms).toBeGreaterThan(0.001);
   await page.getByRole("button",{name:"소리 끄기",exact:true}).click();
-  await expect.poll(()=>page.evaluate(()=>(window as unknown as {audioProbes:{gains:GainNode[]}[]}).audioProbes[0].gains[0].gain.value)).toBeLessThan(.001);
+  await expect.poll(()=>page.evaluate(()=>(window as unknown as {audioProbes:{gains:GainNode[]}[]}).audioProbes.at(-1)!.gains[0].gain.value)).toBeLessThan(.001);
   await page.reload();await expect(page.getByRole("button",{name:"소리 켜기",exact:true})).toBeVisible();
   await page.getByRole("navigation",{name:"공부 영역"}).getByRole("button",{name:/리스닝/}).click();
   expect(await page.locator("audio").evaluate(el=>(el as HTMLAudioElement).muted)).toBe(true);
@@ -80,7 +80,7 @@ test("모의 계정으로 심화 문제·난이도 해제·주간 기록 공유�
   await page.route("**/api/game/leaderboard?**",route=>route.fulfill({json:{rows:[{rank:12,display_name:"나의 연습",earned_this_week:600,is_me:true}],my_rank:12}}));
   await login(page);await expect(page.getByRole("button",{name:/도전자 · 성장 보기/})).toBeVisible();
   await page.getByRole("button",{name:/도전자 · 성장 보기/}).click();await page.getByRole("button",{name:"내 주간 기록 공유"}).click();await expect.poll(()=>page.evaluate(()=>navigator.clipboard.readText())).toContain("12위");await page.keyboard.press("Escape");
-  await page.getByRole("navigation",{name:"미니게임"}).getByRole("button",{name:/워드 팝/}).click();const dialog=page.getByRole("dialog");await expect(dialog.getByRole("button",{name:/🔒 도전/})).toBeDisabled();await dialog.getByRole("button",{name:/✦ 심화/}).click();await expect(page.getByRole("region",{name:"전체 화면 게임"})).toContainText("단어를 4개 터뜨리면");await page.keyboard.press("Escape");
+  await page.getByRole("navigation",{name:"미니게임"}).getByRole("button",{name:/워드 팝/}).click();const dialog=page.getByRole("dialog");await expect(dialog.getByRole("button",{name:/🔒 도전/})).toBeDisabled();await dialog.getByRole("button",{name:/✦ 심화/}).click();await expect(page.getByRole("region",{name:"전체 화면 게임"})).toContainText("한국어 미션 +300점");await page.keyboard.press("Escape");
   await page.getByRole("button",{name:"공부 모드",exact:true}).click();await page.getByRole("navigation",{name:"공부 영역"}).getByRole("button",{name:/리딩/}).click();await expect(page.getByText(/현재 6\/9문제 해제/)).toBeVisible();await page.getByRole("button",{name:"6",exact:true}).click();await page.getByRole("button",{name:"홈으로",exact:true}).click();
   await page.getByRole("button",{name:"로그아웃",exact:true}).click();await page.getByRole("navigation",{name:"공부 영역"}).getByRole("button",{name:/리딩/}).click();await expect(page.getByText(/현재 3\/9문제 해제/)).toBeVisible();await expect(page.getByRole("button",{name:"🔒 6",exact:true})).toBeDisabled();
 });
@@ -106,7 +106,7 @@ test("모의 책상 배치 저장으로 마스터 해제·세 액션 게임 도�
   await page.getByRole("complementary",{name:"나의 도구"}).getByRole("button",{name:"나의 책상 꾸미기"}).click();
   const room=page.getByRole("dialog");await room.getByRole("button",{name:/램프 · 1개/}).click();await room.getByLabel("책상에 배치",{exact:true}).check();await room.getByRole("button",{name:"배치 저장",exact:true}).click();await expect(room.getByText("책상 배치를 저장했습니다.")).toBeVisible();await page.keyboard.press("Escape");
   await expect(page.getByRole("button",{name:/마스터 · 성장 보기/})).toBeVisible();expect(writes).toBe(1);
-  for(const [name,text] of [["옐로캡 러시","1.95초"],["갈림길","2.5초"],["워드 팝","단어를 5개 터뜨리면"]]){
+  for(const [name,text] of [["옐로캡 러시","1.95초"],["갈림길","2.5초"],["워드 팝","한국어 미션 +300점"]]){
     await page.getByRole("navigation",{name:"미니게임"}).getByRole("button",{name:new RegExp(name)}).click();await page.getByRole("dialog").getByRole("button",{name:/✦ 도전/}).click();
 
     await expect(page.getByRole("region",{name:"전체 화면 게임"})).toContainText(text);await page.keyboard.press("Escape");

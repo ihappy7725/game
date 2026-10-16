@@ -2,7 +2,6 @@
 
 import { gameCue, useGameLoop, useGameOutcome } from "@/lib/game-feedback";
 import { GameOutcome } from "./GameOutcome";
-import { RunningWorld } from "./RunningWorld";
 import { ShareScore } from "./ShareScore";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -14,6 +13,8 @@ import { cn } from "@/lib/cn";
 import { useGameState } from "@/lib/game-state";
 import type { VocabAnswer } from "@/lib/api";
 import { GameResultSave } from "./GameResultSave";
+import { useRankedAttempt, type RankedAttempt } from "@/lib/useRankedAttempt";
+import { RankedRecordSave } from "./RankedRecordSave";
 
 /** 옐로캡 러시 — 토플 어휘 동의어 러닝 액션.
  *
@@ -52,6 +53,8 @@ type LastResult = {
 export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
   const reduceMotion = useReducedMotion();
   const { auth } = useGameState();
+  const { attempt, begin: beginRanking } = useRankedAttempt();
+  const [rankedMs, setRankedMs] = useState(1);
   const [runUserId, setRunUserId] = useState<string | null>(null);
   const fieldRef = useRef<HTMLDivElement>(null);
   const [summary, setSummary] = useState<{ answers: VocabAnswer[]; correctCount: number }>({ answers: [], correctCount: 0 });
@@ -103,6 +106,7 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
   }, []);
 
   const startGame = useCallback(() => {
+    beginRanking(); setRankedMs(1);
     resetRun();
     fieldRef.current?.focus();
     setRunUserId(auth.status === "signed-in" ? auth.userId : null);
@@ -120,7 +124,7 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
     setMissed([]);
     setPhase("running");
     deal();
-  }, [deal, auth, resetRun]);
+  }, [deal, auth, resetRun, beginRanking]);
 
   const moveTo = useCallback(
     (next: number) => {
@@ -173,6 +177,7 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
 
     const timer = window.setTimeout(() => {
       if (livesRef.current <= 0) {
+        setRankedMs(Math.max(1, Date.now() - (attempt?.startedAt ?? Date.now())));
         setSummary({ answers: [...answersRef.current], correctCount: correctCountRef.current });
         completeRun(score, correctCountRef.current >= 10);
         setPhase("over");
@@ -181,7 +186,7 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
     }, FEEDBACK_MS);
 
     return () => window.clearTimeout(timer);
-  }, [phase, stage, deal, score, completeRun]);
+  }, [phase, stage, deal, score, completeRun, attempt]);
 
   // 키보드 조작. 창을 닫으면 언마운트되면서 리스너가 정리된다.
   useEffect(() => {
@@ -239,6 +244,7 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
           <IntroPanel difficulty={difficulty} onStart={startGame} checkingSession={auth.status === "loading"} />
         ) : phase === "over" ? (
           <GameOverPanel
+            attempt={attempt} difficulty={difficulty} elapsedMs={rankedMs}
             score={score}
             bestCombo={bestCombo}
             missed={missed}
@@ -347,7 +353,6 @@ function PlayField({
       </div>
 
       <div className="cab-race-world" aria-label="맨해튼 도로">
-        <RunningWorld scene="cab" running={stage === "drive"} steering={lane-1}/>
         <div className="cab-lanes">
           {round.lanes.map((candidate,index)=><button key={`${round.key}-${index}`} type="button" onClick={()=>onPick(index)} aria-label={`${index+1}번 차선: ${candidate}`} aria-pressed={lane===index} className={`cab-road-lane ${lane===index ? "lane-selected" : ""} ${stage==="judge" && index===round.correctLane ? "lane-correct" : ""} ${stage==="judge" && lane===index && index!==round.correctLane ? "lane-wrong" : ""}`}><span className="cab-word-sign"><small>{index+1}번 차선</small><strong>{candidate}</strong></span></button>)}
         </div>
@@ -376,6 +381,7 @@ function PlayField({
 }
 
 function GameOverPanel({
+  attempt, difficulty, elapsedMs,
   score,
   bestCombo,
   missed,
@@ -384,6 +390,7 @@ function GameOverPanel({
   correctCount,
   answers,
 }: {
+  attempt: RankedAttempt | null; difficulty: number; elapsedMs: number;
   score: number;
   bestCombo: number;
   missed: VocabItem[];
@@ -448,6 +455,7 @@ function GameOverPanel({
       </button>
 
       <ShareScore game="옐로캡 러시" score={score}/>
+      <RankedRecordSave key={attempt?.runId ?? "guest"} attempt={attempt} game="cab" difficulty={difficulty} score={score} elapsedMs={elapsedMs}/>
       <GameResultSave userId={userId} score={score} correctCount={correctCount} answers={answers} onBusy={setSaving} />
     </div>
   );

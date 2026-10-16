@@ -1,4 +1,4 @@
 {
-  "arcade": null,
-  "study": null
+  "arcade": "/backgrounds/arcade-loop.mp4",
+  "study": "/backgrounds/study-loop.mp4"
 }

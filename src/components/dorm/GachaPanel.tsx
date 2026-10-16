@@ -4,6 +4,7 @@ import { useId, useRef, useState } from "react";
 import { ApiError, drawGacha, type GachaResult } from "@/lib/api";
 import { gameError, tokenForGameUser, useGameState } from "@/lib/game-state";
 import { actionClass, RARITY_NAMES } from "./dorm-ui";
+import { DeskItemArt } from "./DeskItemArt";
 
 // 화면의 가격 안내입니다. 차감 금액을 요청에 포함하지 않으며 실제 비용은 서버가 결정합니다.
 const DISPLAY_COST = 300;
@@ -50,10 +51,11 @@ export function GachaPanel({ userId, onInventoryChanged }: { userId: string; onI
   }
 
   return (
-    <section aria-label="아이템 뽑기" className="space-y-4">
+    <section aria-label="아이템 뽑기" className="gacha-panel space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-lg font-semibold">아이템 뽑기</h3><button type="button" onClick={() => { refresh(); onInventoryChanged();
       window.dispatchEvent(new Event("toefl-progress-refresh")); }} disabled={busy} className={actionClass}>잔액·아이템 새로고침</button></div>
       <p className="text-sm text-white/65">공부와 어휘 게임으로 모은 코인으로 책상 아이템을 뽑아 보세요. 같은 아이템이 나오면 보유 수량이 늘어납니다.</p>
+      <div className={`gacha-capsule ${busy ? "capsule-opening" : ""}`} aria-hidden="true"><span>✦</span><i/><b>300</b><small>코인 / 1회</small></div>
       <div className="space-y-3 rounded-2xl border border-white/15 bg-black/25 p-5">
         <p aria-label="뽑기 보유 코인" className="font-mono text-lg">{balance === undefined ? "잔액 확인 필요" : `보유 ${balance.toLocaleString("ko-KR")} 코인`}</p>
         {snapshot?.error ? <p role="alert" className="text-sm text-[#ffb4b0]">{snapshot.error}</p> : null}
@@ -73,7 +75,7 @@ export function GachaPanel({ userId, onInventoryChanged }: { userId: string; onI
         <h4 className="font-semibold">새로운 책상 아이템</h4>
         <p role="status" className="text-sm">{result.cost.toLocaleString("ko-KR")}코인 사용 · 남은 코인 {result.coin_balance.toLocaleString("ko-KR")}</p>
         <ul className="grid gap-3 sm:grid-cols-2">{result.items.map((item, index) => <li key={`${item.id}-${index}`} className="rounded-xl border border-white/10 bg-white/5 p-4">
-          <span aria-hidden className="text-3xl">{item.emoji}</span><p className="mt-2 text-sm font-medium">{item.name}</p><p className="mt-1 text-xs text-white/60">{RARITY_NAMES[item.rarity] ?? "아이템"} · 보유 {item.quantity}개</p>
+          <div className="gacha-result-art"><DeskItemArt id={item.id} emoji={item.emoji}/></div><p className="mt-2 text-sm font-medium">{item.name}</p><p className="mt-1 text-xs text-white/60">{RARITY_NAMES[item.rarity] ?? "아이템"} · 보유 {item.quantity}개</p>{item.quantity > 1 ? <p className="gacha-duplicate">중복도 수량으로 보관했어요</p> : null}
         </li>)}</ul>
         <p className="text-xs text-white/60">나의 책상에서 아이템을 배치할 수 있습니다.</p>
       </section> : null}

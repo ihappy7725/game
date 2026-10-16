@@ -20,7 +20,7 @@ async function openApp(page: Page, name: string) {
 
 test("학습 화면 전환·입력과 모의 채점 결과 유지·닫기", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByText("API 연결됨")).toBeVisible();
+  await expect(page.getByText("API 연결됨")).toHaveCount(0);
   await openApp(page,"Writing AI");
   const writing=windowFor(page,"라이팅");
   const essay="Students should study together because they can share useful examples and improve their ideas. This is a local practice essay.";
@@ -156,8 +156,9 @@ test("마이크 권한 대기 중 닫은 창도 뒤늦은 스트림을 정리", 
   await expect.poll(() => page.evaluate(() => (window as unknown as { pendingMic: { stream: MediaStream } }).pendingMic.stream.getTracks().every((track) => track.readyState === "ended"))).toBe(true);
 });
 
-test("홈에서 백엔드 연결 실패 안내", async ({ page }) => {
+test("백엔드가 꺼져 있어도 홈 아이콘 사용·삭제한 API 표시 없음", async ({ page }) => {
   await page.route("http://localhost:3101/", (route) => route.abort());
   await page.goto("/");
-  await expect(page.getByText("API 응답 없음")).toBeVisible();
+  await expect(page.getByText(/API 응답 없음|API 연결됨|서버 확인 중/)).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "미니게임" }).getByRole("button")).toHaveCount(4);
 });

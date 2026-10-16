@@ -20,16 +20,21 @@ export function useSoundscape(mode: OsMode, quiet: boolean, intensity = 1, game:
   const effects = useRef<Set<AudioScheduledSourceNode>>(new Set());
   const duckUntil = useRef(0);
   const loopStatus = useSyncExternalStore(subscribeGameLoop,()=>gameLoopStatus(game),()=>"idle");
-  const start = useCallback(() => {
+  const start = useCallback(async () => {
     if (readMuted()) return;
+    if (!engine.current) {
+      const context = new AudioContext();
+      const master = context.createGain(); master.gain.value = 0.65; master.connect(context.destination);
+      engine.current = { context, master };
+    }
+    const audio = engine.current;
     try {
-      if (!engine.current) {
-        const context = new AudioContext();
-        const master = context.createGain(); master.gain.value = 0.65; master.connect(context.destination);
-        engine.current = { context, master };
-      }
-      void engine.current.context.resume().then(() => setStarted(true)).catch(() => setUnavailable(true));
-    } catch { setUnavailable(true); }
+      await audio.context.resume();
+      if (engine.current === audio && audio.context.state === "running") { setStarted(true); setUnavailable(false); }
+    } catch (error) {
+      // 개발 모드 재마운트에서 이미 정리한 컨텍스트는 오류 안내로 남기지 않습니다.
+      if (engine.current === audio && audio.context.state !== "closed") throw error;
+    }
   }, []);
   const drum = useCallback((kind: "kick" | "snare" | "hat" | "foot" | "clap", when: number, effect = false) => {
     const audio = engine.current;
@@ -87,7 +92,7 @@ export function useSoundscape(mode: OsMode, quiet: boolean, intensity = 1, game:
   useEffect(() => {
     const cue = (event: Event) => {
       if(readMuted() || quiet || document.hidden) return;
-      start(); const audio=engine.current; if(!audio)return;
+      void start().catch(() => setUnavailable(true)); const audio=engine.current; if(!audio)return;
       const now=audio.context.currentTime; const kind=(event as CustomEvent<GameCue>).detail;
       if(kind==="correct" || kind==="pop") [79,84,88].forEach((midi,i)=>note(midi,now+i*.065,.38,.105,true,true));
       if(kind==="miss") { note(55,now,.2,.06,true,true); note(52,now+.13,.35,.05,true,true); }
@@ -103,7 +108,8 @@ export function useSoundscape(mode: OsMode, quiet: boolean, intensity = 1, game:
   },[quiet,start,note,drum]);
   useEffect(()=>()=>stopEffects(),[game,mode,stopEffects]);
   useEffect(() => {
-    const activate = () => start();
+    const activate = () => { void start().catch(() => setUnavailable(true)); };
+    activate();
     window.addEventListener("pointerdown", activate); window.addEventListener("keydown", activate);
     return () => { window.removeEventListener("pointerdown", activate); window.removeEventListener("keydown", activate); };
   }, [start]);
@@ -155,7 +161,7 @@ export function useSoundscape(mode: OsMode, quiet: boolean, intensity = 1, game:
     document.addEventListener("visibilitychange", visibility);
     return () => { window.clearInterval(timer); document.removeEventListener("visibilitychange", visibility); stopNotes(); };
   }, [mode, quiet, muted, started, note, drum, stopNotes, stopEffects, intensity, game, loopStatus]);
-  useEffect(() => () => { stopNotes(); stopEffects(); void engine.current?.context.close(); engine.current = null; }, [stopNotes, stopEffects]);
+  useEffect(() => () => { stopNotes(); stopEffects(); const audio = engine.current; if (audio) { audio.master.gain.value = 0; void audio.context.close(); } engine.current = null; }, [stopNotes, stopEffects]);
   useEffect(() => {
     const apply = () => document.querySelectorAll('audio,video:not([data-background-video])').forEach(el => { (el as HTMLMediaElement).muted = muted; });
     apply(); const observer = new MutationObserver(apply); observer.observe(document.body, {childList:true,subtree:true});
@@ -163,11 +169,11 @@ export function useSoundscape(mode: OsMode, quiet: boolean, intensity = 1, game:
   }, [muted]);
   const toggle = () => {
     fallback = !muted; try { localStorage.setItem(KEY, String(!muted)); } catch { /* 이번 세션에 적용합니다. */ }
-    window.dispatchEvent(new Event(EVENT)); if (muted) start();
+    window.dispatchEvent(new Event(EVENT)); if (muted) void start().catch(() => setUnavailable(true));
   };
   const click = () => {
     if (readMuted()) return;
-    start(); const audio = engine.current; if (!audio) return;
+    void start().catch(() => setUnavailable(true)); const audio = engine.current; if (!audio) return;
     const now = audio.context.currentTime;
     note(mode === "arcade" ? 79 : 76, now, mode === "arcade" ? 0.12 : 0.5, 0.13, mode === "study", true);
     note(mode === "arcade" ? 91 : 83, now + 0.07, 0.18, 0.07, mode === "study", true);

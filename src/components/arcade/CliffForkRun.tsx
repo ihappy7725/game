@@ -8,7 +8,8 @@ import { ArcadeRunner } from "./ArcadeRunner";
 import { ArcadeEffects } from "./ArcadeEffects";
 import { gameCue, useGameLoop, useGameOutcome } from "@/lib/game-feedback";
 import { GameOutcome } from "./GameOutcome";
-import { RunningWorld } from "./RunningWorld";
+import { useRankedAttempt } from "@/lib/useRankedAttempt";
+import { RankedRecordSave } from "./RankedRecordSave";
 import { ShareScore } from "./ShareScore";
 
 type Round = { item: VocabItem; choices: string[]; correct: number; duration: number; rock: boolean; supply: boolean };
@@ -16,6 +17,8 @@ type Run = { score: number; cleared: number; energy: number; combo: number };
 const initial = (): Run => ({ score: 0, cleared: 0, energy: 100, combo: 0 });
 
 export function CliffForkRun({ difficulty = 0 }: { difficulty?: number }) {
+  const { attempt, begin: beginRanking } = useRankedAttempt();
+  const totalMs = useRef(0); const [rankedMs, setRankedMs] = useState(1);
   const [phase, setPhase] = useState<"ready" | "run" | "cross" | "fall" | "over">("ready");
   const [round, setRound] = useState<Round | null>(null);
   const [run, setRun] = useState(initial);
@@ -42,7 +45,7 @@ export function CliffForkRun({ difficulty = 0 }: { difficulty?: number }) {
     selection.current = null; setSelected(null); jump.current = false; setJumped(false);
     clock.current = 0; setElapsed(0); settled.current = false; setPhase("run");
   }
-  function start() { presentation.reset(); runRef.current = initial(); setRun(initial()); deck.current = shuffledDeck(); cursor.current = 0; setPaused(false); setMessage(""); deal(); }
+  function start() { beginRanking(); totalMs.current = 0; setRankedMs(1); presentation.reset(); runRef.current = initial(); setRun(initial()); deck.current = shuffledDeck(); cursor.current = 0; setPaused(false); setMessage(""); deal(); }
   function choose(lane: number) { if (phase !== "run" || paused || settled.current) return; selection.current = lane; setSelected(lane); }
   function leap() { if (phase !== "run" || paused || !round?.rock || clock.current < round.duration * .3 || jump.current) return; jump.current = true; setJumped(true); gameCue("jump"); }
   function resolve() {
@@ -58,9 +61,9 @@ export function CliffForkRun({ difficulty = 0 }: { difficulty?: number }) {
     setPhase(correct && energy > 0 ? "cross" : "fall");
   }
   useArcadeTicker(phase === "run" || phase === "cross" || phase === "fall", paused, delta => {
-    clock.current += delta;
+    clock.current += delta; totalMs.current += delta;
     if (phase === "run" && round) { setElapsed(Math.min(clock.current, round.duration)); if (clock.current >= round.duration) resolve(); }
-    else if (clock.current >= 780) { if (phase === "fall") { presentation.complete(runRef.current.score, runRef.current.cleared >= 10); setPhase("over"); } else deal(); }
+    else if (clock.current >= 780) { if (phase === "fall") { setRankedMs(totalMs.current); presentation.complete(runRef.current.score, runRef.current.cleared >= 10); setPhase("over"); } else deal(); }
   }, () => setPaused(true));
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
@@ -76,10 +79,9 @@ export function CliffForkRun({ difficulty = 0 }: { difficulty?: number }) {
   const energy = phase === "run" ? Math.max(0, run.energy - elapsed / 1000 * 2.2) : run.energy;
   return <section className="word-action cliff-game arcade-art-game" aria-label="갈림길 게임" data-paused={paused}>
     <header className="word-hud"><div><small>단 한 번의 선택, 끝없는 절벽</small><h2>갈림길</h2></div><div aria-label="갈림길 기록"><strong>{run.score}점</strong><span>{run.cleared}개 통과 · 연속 {run.combo}</span></div><div className="stamina"><span>체력 {Math.ceil(energy)}</span><meter aria-label="달리기 체력" min={0} max={100} value={energy}/></div></header>
-    {phase === "ready" ? <div className="word-intro"><span className="word-game-badge">↟</span><h3>올바른 단어가 길이 됩니다</h3><p>위에 뜬 한국어 뜻에 맞는 영단어 길을 고르세요.<br/>갈림길에 닿을 때 판정합니다. 오답·시간 초과는 즉시 추락!</p><p>3번째 길마다 체력 보급 · 4번째 길마다 낙석<br/>낙석 알림이 켜지면 스페이스 또는 점프 버튼!</p><p className="word-note">← → / A·D 또는 길 터치 · 체력은 달리는 동안 소모됩니다.</p><p className="word-note">첫 갈림길 {forkDuration(difficulty, 0) / 1000}초</p><button className="word-primary" onClick={start}>절벽 달리기 시작</button></div> : phase === "over" ? <div className="word-intro" aria-label="갈림길 결과"><GameOutcome outcome={presentation.outcome}/><span className="word-game-badge">↯</span><h3>다음 갈림길은 더 멀리</h3><p>{message}</p><p>{run.score}점 · {run.cleared}개 갈림길 통과</p><ShareScore game="갈림길" score={run.score}/><button className="word-primary" onClick={start}>다시 달리기</button></div> : <>
+    {phase === "ready" ? <div className="word-intro"><span className="word-game-badge">↟</span><h3>올바른 단어가 길이 됩니다</h3><p>위에 뜬 한국어 뜻에 맞는 영단어 길을 고르세요.<br/>갈림길에 닿을 때 판정합니다. 오답·시간 초과는 즉시 추락!</p><p>3번째 길마다 체력 보급 · 4번째 길마다 낙석<br/>낙석 알림이 켜지면 스페이스 또는 점프 버튼!</p><p className="word-note">← → / A·D 또는 길 터치 · 체력은 달리는 동안 소모됩니다.</p><p className="word-note">첫 갈림길 {forkDuration(difficulty, 0) / 1000}초</p><button className="word-primary" onClick={start}>절벽 달리기 시작</button></div> : phase === "over" ? <div className="word-intro" aria-label="갈림길 결과"><GameOutcome outcome={presentation.outcome}/><span className="word-game-badge">↯</span><h3>다음 갈림길은 더 멀리</h3><p>{message}</p><p>{run.score}점 · {run.cleared}개 갈림길 통과</p><ShareScore game="갈림길" score={run.score}/><RankedRecordSave key={attempt?.runId ?? "guest"} attempt={attempt} game="fork" difficulty={difficulty} score={run.score} elapsedMs={rankedMs}/><button className="word-primary" onClick={start}>다시 달리기</button></div> : <>
       <div className="word-question"><span>이 뜻의 길을 고르세요</span><strong aria-label="갈림길 한국어 뜻">{round?.item.meaning}</strong><button onClick={() => setPaused(!paused)}>{paused ? "계속 달리기" : "일시정지"}</button></div>
       <div className={`cliff-world word-world phase-${phase}`} aria-label="절벽 전장">
-        <RunningWorld scene="fork" running={phase === "run" || phase === "cross"} paused={paused} progress={progress} steering={(selected === null ? 0 : selected === 0 ? -1 : 1) * progress}/>
         {round?.rock ? <div className="trail-rock" aria-hidden="true" style={{ top: `${38 + progress * 35}%` }}><span/></div> : round?.supply ? <div className="trail-pickup" aria-hidden="true" style={{ top: `${38 + progress * 35}%` }}><span>✚</span></div> : null}
         <div className={`cliff-runner ${jumped ? "runner-jumping" : ""}`} style={{ left: `${50 + (selected === null ? 0 : selected === 0 ? -1 : 1) * progress * 17}%` }}><ArcadeRunner facing="back" running={!paused && phase === "run"} airborne={jumped}/></div>
         {round?.choices.map((word, i) => <button key={word} className={`fork-sign fork-${i} ${selected === i ? "chosen" : ""}`} aria-label={`${i === 0 ? "왼쪽" : "오른쪽"} 길: ${word}`} aria-pressed={selected === i} disabled={paused || phase !== "run"} onClick={() => choose(i)}><span>{i === 0 ? "←" : "→"}</span><strong>{word}</strong></button>)}
