@@ -1,0 +1,7 @@
+# 현재 가상환경에 설치된 버전으로 고정
+fastapi==0.143.2
+uvicorn[standard]==0.54.0
+openai==3.31.0
+supabase==2.33.0
+python-dotenv==1.2.3
+python-multipart==0.0.32
