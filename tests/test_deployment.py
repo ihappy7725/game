@@ -5,6 +5,12 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import MagicMock, patch
 
+import sys
+from pathlib import Path
+
+# 백엔드 모듈은 backend/에 있습니다. 저장소 루트에서 실행해도 찾도록 경로를 더합니다.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
+
 from fastapi.testclient import TestClient
 from runtime_settings import cors_origins, paid_grading_enabled
 

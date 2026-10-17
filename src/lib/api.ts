@@ -3,7 +3,9 @@
 // 127.0.0.1 대신 localhost를 씁니다. 크롬은 localhost 페이지에서 IP 리터럴로 가는
 // 요청을 Private Network Access로 보고 preflight에 전용 헤더를 붙이는데,
 // Starlette CORS 미들웨어가 이를 400으로 거절해 요청이 통째로 막힙니다.
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+// 배포에서는 프론트와 백엔드가 같은 도메인(Vercel Services)이라 상대 경로를 씁니다.
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+  ?? (process.env.NODE_ENV === "production" ? "" : "http://localhost:8000");
 
 export type RubricItem = {
   score: number;
