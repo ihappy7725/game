@@ -19,7 +19,8 @@ def cors_origins(raw: str | None) -> list[str]:
 
 
 def paid_grading_enabled(env) -> bool:
-    production = env.get("APP_ENV", "").lower() == "production" or env.get("RENDER") == "true" or env.get("VERCEL") == "1"
+    production = (env.get("APP_ENV", "").lower() == "production" or env.get("RENDER") == "true"
+                  or env.get("VERCEL") == "1" or bool(env.get("RAILWAY_ENVIRONMENT_ID")))
     value = env.get("PAID_GRADING_ENABLED", "false" if production else "true").strip().lower()
     if value not in ("true", "false"):
         raise ValueError("PAID_GRADING_ENABLED에는 true 또는 false를 넣어 주세요.")

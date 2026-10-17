@@ -76,7 +76,7 @@ class DeploymentTests(unittest.TestCase):
 
     def test_runtime_defaults_and_invalid_values(self):
         self.assertTrue(paid_grading_enabled({}))
-        for env in ({"APP_ENV": "production"}, {"RENDER": "true"}, {"VERCEL": "1"}):
+        for env in ({"APP_ENV": "production"}, {"RENDER": "true"}, {"VERCEL": "1"}, {"RAILWAY_ENVIRONMENT_ID": "mock-environment"}):
             self.assertFalse(paid_grading_enabled(env))
         self.assertTrue(paid_grading_enabled({"APP_ENV": "production", "PAID_GRADING_ENABLED": "true"}))
         with self.assertRaises(ValueError):

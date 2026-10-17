@@ -78,7 +78,7 @@ if PAID_GRADING_ENABLED and _looks_unfilled(OPENAI_API_KEY):
 
 openai_client = None if _looks_unfilled(OPENAI_API_KEY) else OpenAI(api_key=OPENAI_API_KEY, timeout=120.0, max_retries=2)
 
-# Supabase는 선택적으로 동작: 설정이 없으면 채점은 되지만 저장만 건너뜀
+# Supabase 미설정 상태에서도 서버 상태 검사는 열되 인증이 필요한 기능은 거절합니다.
 supabase_client: Optional[Client] = None
 if _looks_unfilled(SUPABASE_URL) or _looks_unfilled(SUPABASE_SERVICE_ROLE_KEY):
     logger.warning(
