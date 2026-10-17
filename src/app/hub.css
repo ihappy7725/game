@@ -924,13 +924,28 @@
 @media(max-width:700px) {
   .hub-header { min-height:145px; padding:18px 18px 78px; align-items:center; flex-wrap:nowrap; }
   .mode-switch { top:102px; margin:0; }
-  .hub-main { padding:150px 82px 90px 12px; }
-  .hub-launchers { width:100%; justify-content:flex-start; overflow-x:auto; gap:24px; padding:15px 8px; }
-  .launcher { flex:0 0 104px; width:104px; }
-  .launcher-art { width:104px; height:104px; border-radius:29px; }
+  .hub-main { padding:132px 82px 182px 12px; }
+  /* 가로 스크롤은 세 번째 카드가 잘린 채로 멈춰 고장처럼 보입니다.
+     좁은 화면에서는 2열로 쌓아 네 개를 한눈에 보여 줍니다. */
+  .hub-launchers { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); justify-items:center; align-content:center; width:100%; margin:0; gap:18px 12px; padding:0; overflow:visible; }
+  .launcher { flex:none; width:100%; max-width:none; }
+  .launcher-art { width:100%; max-width:104px; height:104px; border-radius:29px; }
   .launcher-art svg { width:46px; height:46px; }
   .hub-tools { top:50%; transform:translateY(-50%); }
   .hub-footer { padding:12px 17px; }
+}
+@media(max-width:700px) and (max-height:780px) {
+  .hub-main { padding-top:116px; padding-bottom:172px; }
+  .hub-launchers { gap:12px 10px; }
+  .launcher-art { max-width:92px; height:92px; border-radius:26px; }
+  .launcher-art svg { width:40px; height:40px; }
+}
+/* 좁은 화면에서 머리글이 두 줄로 접히지 않게 로고와 버튼을 한 단계 줄입니다. */
+@media(max-width:400px) {
+  .hub-header { padding:14px 12px 78px; gap:8px; }
+  .hub-brand { gap:7px; font-size:16px; white-space:nowrap; }
+  .union-brand-icon { width:34px; height:34px; }
+  .hub-account { gap:6px; }
 }
 
 .sticker-gallery { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
@@ -996,7 +1011,7 @@
 .launcher-label { display:block; margin:0; color:#213f4f; font-size:16px; line-height:1.5; text-shadow:none; }
 .launcher-subtitle { display:block; margin-top:4px; color:#44616d; font-size:10px; line-height:1.7; text-shadow:none; }
 @media(max-width:1050px) { .launcher-caption { width:143px; }.launcher-label { font-size:14px; }.launcher-subtitle { font-size:9px; } }
-@media(max-width:700px) { .launcher-caption { width:112px; min-height:77px; padding:8px 5px; }.launcher-label { font-size:12px; }.launcher-subtitle { font-size:9px; }.sound-caption { display:none; } }
+@media(max-width:700px) { .launcher-caption { width:100%; min-height:72px; margin-top:10px; padding:8px 6px; }.launcher-label { font-size:12px; }.launcher-subtitle { font-size:9px; }.sound-caption { display:none; } }
 
 /* 두 액션 게임의 배경과 캐릭터는 독립 레이어로 그립니다. */
 .word-action { padding:22px; border:1px solid #ffffff52; border-radius:26px; overflow:hidden; background:linear-gradient(145deg,#123d56,#152b48); color:#f5faff; box-shadow:0 30px 70px #07182c50; }
