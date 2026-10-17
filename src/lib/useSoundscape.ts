@@ -163,7 +163,7 @@ export function useSoundscape(mode: OsMode, quiet: boolean, intensity = 1, game:
   }, [mode, quiet, muted, started, note, drum, stopNotes, stopEffects, intensity, game, loopStatus]);
   useEffect(() => () => { stopNotes(); stopEffects(); const audio = engine.current; if (audio) { audio.master.gain.value = 0; void audio.context.close(); } engine.current = null; }, [stopNotes, stopEffects]);
   useEffect(() => {
-    const apply = () => document.querySelectorAll('audio,video:not([data-background-video])').forEach(el => { (el as HTMLMediaElement).muted = muted; });
+    const apply = () => document.querySelectorAll('audio,video:not([data-background-video]):not([data-opening-video])').forEach(el => { (el as HTMLMediaElement).muted = muted; });
     apply(); const observer = new MutationObserver(apply); observer.observe(document.body, {childList:true,subtree:true});
     return () => observer.disconnect();
   }, [muted]);

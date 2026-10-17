@@ -9,6 +9,11 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Heart, Keyboard, RotateCcw, Zap } from "lucide-react";
 import { ArcadeEffects } from "./ArcadeEffects";
 import { buildLanes, shuffledDeck, type VocabItem } from "@/lib/vocab";
+import { GameHud } from "./GameHud";
+import { useGamePause } from "./GamePause";
+import { useArcadeTicker } from "./useArcadeTicker";
+import { useGameLearning } from "@/lib/learning-progress";
+import { cabDuration } from "@/lib/game-tempo";
 import { cn } from "@/lib/cn";
 import { useGameState } from "@/lib/game-state";
 import type { VocabAnswer } from "@/lib/api";
@@ -26,10 +31,6 @@ import { RankedRecordSave } from "./RankedRecordSave";
  *     라운드가 영원히 끝나지 않는다.
  *   - 로그인한 계정으로 시작한 판만 종료 화면에서 보상·오답을 한 번 저장한다.
  */
-
-const ROUND_MS = 3000;
-/** 피버 타임에는 더 빨라진다 */
-const FEVER_ROUND_MS = 2100;
 const FEEDBACK_MS = 900;
 const FEVER_AT = 5;
 const START_LIVES = 3;
@@ -51,6 +52,12 @@ type LastResult = {
 };
 
 export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
+  const {begin:beginLearning,correct:learnCorrect,milestone:clearStage} = useGameLearning("cab", difficulty);
+  const { paused, setPaused } = useGamePause();
+  const roundClock = useRef(0), feedbackClock = useRef(0), runClock = useRef(0);
+  const [elapsed, setElapsed] = useState(0);
+  const [correctTotal,setCorrectTotal] = useState(0);
+  const [answeredCount,setAnsweredCount] = useState(0);
   const reduceMotion = useReducedMotion();
   const { auth } = useGameState();
   const { attempt, begin: beginRanking } = useRankedAttempt();
@@ -82,9 +89,9 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
   const roundKeyRef = useRef(0);
 
   const { outcome, complete: completeRun, reset: resetRun } = useGameOutcome("cab", difficulty);
-  useGameLoop("cab", phase === "over" ? "ended" : phase === "running" ? "running" : "idle");
+  useGameLoop("cab", phase === "over" ? "ended" : phase === "running" ? paused ? "paused" : "running" : "idle");
   const fever = combo >= FEVER_AT;
-  const roundMs = Math.round((fever ? FEVER_ROUND_MS : ROUND_MS) * [1, 0.8, 0.65][difficulty]);
+  const roundMs = cabDuration(difficulty, answeredCount, fever);
 
   /** 덱에서 다음 단어를 꺼내 라운드를 만든다. 덱이 바닥나면 다시 섞는다. */
   const deal = useCallback(() => {
@@ -102,11 +109,12 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
     setLane(1);
     setRound({ key: roundKeyRef.current, item, lanes, correctLane });
     setLastResult(null);
+    roundClock.current = 0; feedbackClock.current = 0; setElapsed(0);
     setStage("drive");
   }, []);
 
   const startGame = useCallback(() => {
-    beginRanking(); setRankedMs(1);
+    setPaused(false); runClock.current = 0; beginLearning(); setAnsweredCount(0); setCorrectTotal(0); beginRanking(); setRankedMs(1);
     resetRun();
     fieldRef.current?.focus();
     setRunUserId(auth.status === "signed-in" ? auth.userId : null);
@@ -124,30 +132,35 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
     setMissed([]);
     setPhase("running");
     deal();
-  }, [deal, auth, resetRun, beginRanking]);
+  }, [deal, auth, resetRun, beginRanking, beginLearning, setPaused]);
 
   const moveTo = useCallback(
     (next: number) => {
-      if (phase !== "running" || stage !== "drive") return;
+      if (phase !== "running" || stage !== "drive" || paused) return;
       const clamped = Math.max(0, Math.min(2, next));
       laneRef.current = clamped;
       setLane(clamped);
     },
-    [phase, stage],
+    [phase, stage, paused],
   );
 
-  // 제한 시간이 끝나면 그 순간 택시가 있던 차선으로 채점한다.
-  useEffect(() => {
-    if (phase !== "running" || stage !== "drive" || !round) return;
-
-    const timer = window.setTimeout(() => {
+  // 정지·탭 숨김 구간은 판정, 피드백, 순위 시간에 더하지 않습니다.
+  useArcadeTicker(phase === "running", paused, delta => {
+    runClock.current += delta;
+    if (stage === "drive" && round) {
+      roundClock.current += delta;
+      setElapsed(Math.min(roundMs, roundClock.current));
+      if (roundClock.current < roundMs) return;
       const chosenLane = laneRef.current;
       const correct = chosenLane === round.correctLane;
       gameCue(correct ? "correct" : "miss");
       answersRef.current.push({ prompt: round.item.word, correct_answer: round.item.synonym, chosen: round.lanes[chosenLane], was_correct: correct });
 
+      setAnsweredCount(count=>count+1);
       if (correct) {
-        correctCountRef.current += 1;
+        learnCorrect(round.item.word);
+        correctCountRef.current += 1; setCorrectTotal(correctCountRef.current);
+        if(correctCountRef.current % 10 === 0) clearStage(correctCountRef.current / 10);
         const nextCombo = comboRef.current + 1;
         comboRef.current = nextCombo;
         // 콤보가 쌓일수록 점수가 커지고, 피버 중에는 두 배
@@ -166,27 +179,17 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
 
       setLastResult({ correct, item: round.item, chosen: round.lanes[chosenLane] });
       setStage("judge");
-    }, roundMs);
-
-    return () => window.clearTimeout(timer);
-  }, [phase, stage, round, roundMs]);
-
-  // 결과를 잠깐 보여 준 뒤 다음 라운드 또는 종료
-  useEffect(() => {
-    if (phase !== "running" || stage !== "judge") return;
-
-    const timer = window.setTimeout(() => {
+      feedbackClock.current = 0;
+    } else if (stage === "judge") {
+      feedbackClock.current += delta;
+      if (feedbackClock.current < FEEDBACK_MS) return;
       if (livesRef.current <= 0) {
-        setRankedMs(Math.max(1, Date.now() - (attempt?.startedAt ?? Date.now())));
+        setRankedMs(Math.max(1, runClock.current));
         setSummary({ answers: [...answersRef.current], correctCount: correctCountRef.current });
-        completeRun(score, correctCountRef.current >= 10);
-        setPhase("over");
-      }
-      else deal();
-    }, FEEDBACK_MS);
-
-    return () => window.clearTimeout(timer);
-  }, [phase, stage, deal, score, completeRun, attempt]);
+        completeRun(score, correctCountRef.current >= 10); setPhase("over");
+      } else deal();
+    }
+  }, () => setPaused(true));
 
   // 키보드 조작. 창을 닫으면 언마운트되면서 리스너가 정리된다.
   useEffect(() => {
@@ -209,16 +212,13 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
   }, [phase, moveTo]);
 
   return (
-    <div ref={fieldRef} tabIndex={0} aria-label="택시 게임 조작 영역" className="cab-game arcade-art-game relative overflow-hidden rounded-2xl outline-offset-2">
+    <div ref={fieldRef} tabIndex={0} aria-label="택시 게임 조작 영역" data-paused={paused} className="cab-game arcade-art-game relative overflow-hidden rounded-2xl outline-offset-2">
       <div className="relative min-h-[460px]">
         <div className="cab-illustration" aria-hidden="true"/>
 
-        {/* 상태 표시줄 */}
-        <div
-          className="cab-hud flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-[12px]"
-          style={{ background: "var(--os-glass)", borderBottom: "1px solid var(--os-border)" }}
-        >
-          <span className="cab-hud-title">옐로캡 러시</span>
+        {/* 전체 바 대신 독립된 상태 배지를 배경 위에 배치합니다. */}
+        <GameHud className="cab-stats" label="택시 상태">
+          <span className="cab-stage-label">STAGE {Math.floor(correctTotal/10)+1} · {Math.round(3000/roundMs*100)}% 속도</span>
           <span className="font-mono text-sm font-semibold tabular-nums">{score.toLocaleString("ko-KR")}점</span>
           <span style={{ color: "var(--os-ink-dim)" }}>
             콤보 <strong className="font-mono tabular-nums">{combo}</strong>
@@ -237,8 +237,9 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
               <Zap className="h-3 w-3" aria-hidden /> 피버 ×2
             </span>
           ) : null}
-        </div>
+        </GameHud>
 
+        {paused && phase === "running" ? <div className="arcade-pause-notice" role="status">잠깐 쉬는 중 · 우측 상단 재생 버튼을 눌러주세요</div> : null}
         {phase === "over" ? <GameOutcome outcome={outcome}/> : null}
         {phase === "ready" ? (
           <IntroPanel difficulty={difficulty} onStart={startGame} checkingSession={auth.status === "loading"} />
@@ -259,6 +260,8 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
             lane={lane}
             stage={stage}
             roundMs={roundMs}
+            elapsed={elapsed}
+            paused={paused}
             fever={fever}
             reduceMotion={Boolean(reduceMotion)}
             lastResult={lastResult}
@@ -279,7 +282,7 @@ function IntroPanel({ onStart, checkingSession, difficulty }: { onStart: () => v
       </p>
       <h3 className="mt-2 text-2xl font-semibold tracking-tight">옐로캡 러시</h3>
       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed" style={{ color: "var(--os-ink-dim)" }}>
-        위에 뜨는 토플 단어의 <strong>동의어</strong>가 적힌 차선으로 택시를 옮기세요. 제한 시간은 난이도에 따라 {[3, 2.4, 1.95][difficulty]}초,
+        위에 뜨는 토플 단어와 <strong>가장 가까운 뜻</strong>이 적힌 차선으로 택시를 옮기세요. 제한 시간은 난이도에 따라 {[3, 2.4, 1.95][difficulty]}초,
         연속으로 맞히면 피버 타임에 들어가 점수가 두 배가 됩니다.
       </p>
 
@@ -312,6 +315,8 @@ function PlayField({
   lane,
   stage,
   roundMs,
+  elapsed,
+  paused,
   fever,
   reduceMotion,
   lastResult,
@@ -322,6 +327,8 @@ function PlayField({
   lane: number;
   stage: Stage;
   roundMs: number;
+  elapsed: number;
+  paused: boolean;
   fever: boolean;
   reduceMotion: boolean;
   lastResult: LastResult | null;
@@ -342,19 +349,13 @@ function PlayField({
 
       {/* 남은 시간. 애니메이션이 꺼져도 숫자 판정에는 영향이 없다. */}
       <div className="mx-auto mt-3 h-1.5 w-full max-w-sm overflow-hidden rounded-full bg-white/15">
-        <motion.div
-          key={round.key}
-          initial={{ width: "100%" }}
-          animate={{ width: stage === "drive" ? "0%" : "0%" }}
-          transition={{ duration: stage === "drive" ? roundMs / 1000 : 0, ease: "linear" }}
-          className="h-full rounded-full"
-          style={{ background: fever ? "#F5C518" : "var(--os-accent-soft)" }}
-        />
+        <div className="h-full rounded-full" role="progressbar" aria-label="택시 판단 남은 시간" aria-valuemin={0} aria-valuemax={roundMs} aria-valuenow={Math.max(0,roundMs-elapsed)} style={{ width: `${Math.max(0,1-elapsed/roundMs)*100}%`, background: fever ? "#F5C518" : "var(--os-accent-soft)" }}/>
+
       </div>
 
       <div className="cab-race-world" aria-label="맨해튼 도로">
         <div className="cab-lanes">
-          {round.lanes.map((candidate,index)=><button key={`${round.key}-${index}`} type="button" onClick={()=>onPick(index)} aria-label={`${index+1}번 차선: ${candidate}`} aria-pressed={lane===index} className={`cab-road-lane ${lane===index ? "lane-selected" : ""} ${stage==="judge" && index===round.correctLane ? "lane-correct" : ""} ${stage==="judge" && lane===index && index!==round.correctLane ? "lane-wrong" : ""}`}><span className="cab-word-sign"><small>{index+1}번 차선</small><strong>{candidate}</strong></span></button>)}
+          {round.lanes.map((candidate,index)=><button key={`${round.key}-${index}`} type="button" disabled={paused} onClick={()=>onPick(index)} aria-label={`${index+1}번 차선: ${candidate}`} aria-pressed={lane===index} className={`cab-road-lane ${lane===index ? "lane-selected" : ""} ${stage==="judge" && index===round.correctLane ? "lane-correct" : ""} ${stage==="judge" && lane===index && index!==round.correctLane ? "lane-wrong" : ""}`}><span className="cab-word-sign"><small>{index+1}번 차선</small><strong>{candidate}</strong></span></button>)}
         </div>
         <motion.span initial={false} className="cab-player" aria-hidden="true" animate={{left:`${(lane+.5)*100/3}%`}} transition={reduceMotion ? {duration:0} : {type:"spring",stiffness:420,damping:30}}><span className="cab-shadow"/><span className="cab-car-sprite"/><span className="cab-exhaust"/></motion.span>
         {stage==="judge" && lastResult ? <ArcadeEffects kind={lastResult.correct ? "success" : "miss"} eventKey={burst}/> : null}

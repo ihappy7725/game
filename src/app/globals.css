@@ -3,6 +3,9 @@
 @import "./arcade-art.css";
 @import "./game-experience.css";
 @import "./desk-experience.css";
+@import "./opening-fork.css";
+@import "./learning-vocab.css";
+@import "./game-controls.css";
 
 /* ==========================================================================
    디자인 토큰 - "뉴욕의 밤" 팔레트 + macOS 유리창 질감

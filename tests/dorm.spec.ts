@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 test.beforeEach(async ({ context }) => {
   await context.route("**/*", (route) => {

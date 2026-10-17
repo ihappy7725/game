@@ -1,3 +1,5 @@
+import vocabulary from "@/data/vocabulary.json";
+
 /** Yellow Cab Rush 용 토플 어휘 데이터.
  *
  *  출제는 정적 데이터로 진행하고 종료 후 보상·오답을 게임 API로 보냅니다.
@@ -8,6 +10,8 @@
 
 export type VocabItem = {
   word: string;
+  /** 직접 작성하거나 가져온 학습 예문 */
+  example: string;
   /** 정답 동의어 */
   synonym: string;
   /** 오답 후보 2개 */
@@ -16,47 +20,25 @@ export type VocabItem = {
   meaning: string;
 };
 
-export const VOCAB: VocabItem[] = [
-  { word: "abundant", synonym: "plentiful", decoys: ["scarce", "hostile"], meaning: "풍부한" },
-  { word: "arbitrary", synonym: "random", decoys: ["deliberate", "precise"], meaning: "임의적인" },
-  { word: "coherent", synonym: "logical", decoys: ["chaotic", "hollow"], meaning: "일관성 있는" },
-  { word: "deteriorate", synonym: "worsen", decoys: ["flourish", "assemble"], meaning: "악화되다" },
-  { word: "diminish", synonym: "decrease", decoys: ["amplify", "sustain"], meaning: "줄어들다" },
-  { word: "elaborate", synonym: "detailed", decoys: ["brief", "vacant"], meaning: "정교한" },
-  { word: "feasible", synonym: "achievable", decoys: ["impossible", "reckless"], meaning: "실현 가능한" },
-  { word: "hostile", synonym: "unfriendly", decoys: ["gracious", "fertile"], meaning: "적대적인" },
-  { word: "inevitable", synonym: "unavoidable", decoys: ["optional", "gradual"], meaning: "불가피한" },
-  { word: "intricate", synonym: "complex", decoys: ["simple", "barren"], meaning: "복잡한" },
-  { word: "lucrative", synonym: "profitable", decoys: ["worthless", "tedious"], meaning: "수익성 있는" },
-  { word: "meticulous", synonym: "careful", decoys: ["careless", "abrupt"], meaning: "꼼꼼한" },
-  { word: "mitigate", synonym: "alleviate", decoys: ["aggravate", "provoke"], meaning: "완화하다" },
-  { word: "notion", synonym: "concept", decoys: ["evidence", "barrier"], meaning: "개념" },
-  { word: "obsolete", synonym: "outdated", decoys: ["modern", "durable"], meaning: "구식의" },
-  { word: "plausible", synonym: "believable", decoys: ["absurd", "rigid"], meaning: "그럴듯한" },
-  { word: "prominent", synonym: "notable", decoys: ["obscure", "trivial"], meaning: "두드러진" },
-  { word: "refute", synonym: "disprove", decoys: ["confirm", "endorse"], meaning: "반박하다" },
-  { word: "scarce", synonym: "rare", decoys: ["abundant", "dense"], meaning: "부족한" },
-  { word: "subtle", synonym: "understated", decoys: ["obvious", "harsh"], meaning: "미묘한" },
-  { word: "tedious", synonym: "boring", decoys: ["thrilling", "concise"], meaning: "지루한" },
-  { word: "vulnerable", synonym: "susceptible", decoys: ["immune", "sturdy"], meaning: "취약한" },
-  { word: "ambiguous", synonym: "unclear", decoys: ["definite", "candid"], meaning: "모호한" },
-  { word: "compile", synonym: "gather", decoys: ["scatter", "discard"], meaning: "모아 엮다" },
-  { word: "constrain", synonym: "restrict", decoys: ["liberate", "expand"], meaning: "제한하다" },
-  { word: "derive", synonym: "obtain", decoys: ["donate", "forfeit"], meaning: "끌어내다" },
-  { word: "endure", synonym: "withstand", decoys: ["surrender", "vanish"], meaning: "견디다" },
-  { word: "exploit", synonym: "utilize", decoys: ["neglect", "conceal"], meaning: "활용하다" },
-  { word: "imperative", synonym: "essential", decoys: ["optional", "lenient"], meaning: "필수적인" },
-  { word: "sustain", synonym: "maintain", decoys: ["abandon", "disrupt"], meaning: "유지하다" },
-];
+export const VOCAB = vocabulary as VocabItem[];
 
 /** 매 판마다 겹치지 않게 섞은 출제 순서를 만든다. */
-export function shuffledDeck(): VocabItem[] {
-  const deck = [...VOCAB];
+export function shuffled<T>(items: readonly T[]): T[] {
+  const deck = [...items];
   for (let i = deck.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
+    const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]];
   }
   return deck;
+}
+export function shuffledDeck(reserve = 10): VocabItem[] {
+  const deck = shuffled(VOCAB);
+  // 최근 출제 대기열을 뒤로 보내 재시작·게임 전환 때 같은 초반 단어를 줄입니다.
+  if (typeof window === "undefined") return deck;
+  let recent: string[] = [];
+  try { const raw = JSON.parse(sessionStorage.getItem("toefl-recent-vocab-v1") ?? "[]"); if (Array.isArray(raw)) recent = raw.filter(v => typeof v === "string").slice(-60); } catch { /* 저장이 막혀도 무작위 출제합니다. */ }
+  const ordered = [...deck.filter(item => !recent.includes(item.word)), ...deck.filter(item => recent.includes(item.word))];
+  try { sessionStorage.setItem("toefl-recent-vocab-v1", JSON.stringify([...recent, ...ordered.slice(0, reserve).map(item => item.word)].slice(-60))); } catch { /* 현재 판은 정상 진행합니다. */ }
+  return ordered;
 }
 
 /** 한 라운드의 3개 차선. 정답이 어느 차선인지 함께 돌려준다. */

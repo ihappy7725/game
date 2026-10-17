@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { readFileSync } from "node:fs";
 
 test("합성 테스트 영상의 실제 무음 반복 재생·수동 정지·모드/동작 줄이기", async ({ page, context }) => {

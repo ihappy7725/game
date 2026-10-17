@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "./fixtures";
 import { popLegalMove, swapPop, type PopBoard } from "../src/lib/word-pop";
 import { POP_RECORD_KEY, parsePopRecords, rankPopRecords } from "../src/lib/pop-records";
 
@@ -71,14 +71,14 @@ test("첫 방문 소리 기본 켜짐·실제 전체화면과 해제 후 재진�
   await page.getByRole("button", { name: "메모리 카드", exact: true }).click(); await page.evaluate(() => document.exitFullscreen()); await expect(page.getByRole("region", { name: "전체 화면 게임" })).toHaveCount(0);
 });
 
-test("제공 영상 여섯 개 디코딩·무음·게임 종료 정리·작은 화면", async ({ page }) => {
+test("홈·게임 영상 다섯 개 디코딩·무음·게임 종료 정리·작은 화면", async ({ page }) => {
   await page.goto("/"); const home = page.locator(".learning-hub>.landmark-scene video");
   for (const [mode, src] of [["아케이드 모드", "arcade"], ["공부 모드", "study"]]) {
     await page.getByRole("button", { name: mode, exact: true }).click(); await expect(home).toHaveAttribute("src", `/backgrounds/${src}-loop.mp4`);
     await expect.poll(() => home.evaluate(el => (el as HTMLVideoElement).currentTime)).toBeGreaterThan(.1); expect(await home.evaluate(el => (el as HTMLVideoElement).videoWidth)).toBe(1280);
   }
   await page.getByRole("button", { name: "아케이드 모드", exact: true }).click();
-  for (const [name, src] of [["옐로캡 러시", "cab"], ["갈림길", "fork"], ["메모리 카드", "memory"], ["워드 팝", "pop"]]) {
+  for (const [name, src] of [["옐로캡 러시", "cab"], ["메모리 카드", "memory"], ["워드 팝", "pop"]]) {
     await page.getByRole("navigation", { name: "미니게임" }).getByRole("button", { name, exact: true }).click(); const video = page.locator(".game-backdrop video");
     await expect(video).toHaveAttribute("src", `/backgrounds/${src}-loop.mp4`); await expect.poll(() => video.evaluate(el => (el as HTMLVideoElement).currentTime)).toBeGreaterThan(.1);
     expect(await video.evaluate(el => (el as HTMLVideoElement).muted && (el as HTMLVideoElement).loop)).toBe(true);

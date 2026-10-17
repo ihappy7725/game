@@ -37,8 +37,8 @@ function GameRankings({ userId }: { userId: string }) {
   const id = useId();
   return <section aria-label="게임별 주간 순위" className="game-rankings">
     <nav aria-label="순위 게임">{([["cab", "옐로캡 러시"], ["fork", "갈림길"], ["pop", "워드 팝"]] as const).map(([key, label]) => <button key={key} aria-pressed={key === game} onClick={() => setGame(key)}>{label}</button>)}</nav>
-    <div className="ranking-filters"><label htmlFor={`${id}-difficulty`}>난이도<select id={`${id}-difficulty`} value={difficulty} onChange={e => setDifficulty(Number(e.target.value))}>{["기본", "심화", "도전"].map((name, i) => <option key={name} value={i}>{name}</option>)}</select></label>
-    {game === "pop" ? <label htmlFor={`${id}-stage`}>스테이지<select id={`${id}-stage`} value={stage} onChange={e => setStage(Number(e.target.value))}>{[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}단계</option>)}</select></label> : null}</div>
+    <div className="ranking-filters"><div><label htmlFor={`${id}-difficulty`}>난이도</label><select id={`${id}-difficulty`} value={difficulty} onChange={e => setDifficulty(Number(e.target.value))}>{["기본", "심화", "도전"].map((name, i) => <option key={name} value={i}>{name}</option>)}</select></div>
+    {game === "pop" ? <div><label htmlFor={`${id}-stage`}>스테이지</label><select id={`${id}-stage`} value={stage} onChange={e => setStage(Number(e.target.value))}>{[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}단계</option>)}</select></div> : null}</div>
     <p>매주 월요일 0시(한국 시간)부터의 개인 최고 기록입니다. {game === "pop" ? "같은 단계·난이도에서 빠른 클리어 시간 순입니다." : "같은 난이도에서 높은 점수 순입니다."} 동점은 공동 순위입니다.</p>
     <GameRanking key={`${game}:${difficulty}:${stage}`} userId={userId} game={game} difficulty={difficulty} stage={game === "pop" ? stage : 0}/>
     <p className="ranking-note">클라이언트가 제출한 연습 기록이며 서버 재생 검증 전입니다. 이메일은 표시하지 않고 자동 별칭을 사용합니다. 메모리 카드는 자가 복습이므로 경쟁 순위에서 제외합니다.</p>

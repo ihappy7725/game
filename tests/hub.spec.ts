@@ -1,6 +1,9 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 import { deriveProgression } from "../src/lib/progression";
 import type { InventoryItem } from "../src/lib/api";
+
+// 이 파일은 난이도 버튼을 직접 검사하므로 공통 초급 선택 보조를 사용하지 않습니다.
+test.use({ chooseBeginner: false });
 
 test.beforeEach(async ({context})=>{
   await context.route("**/*",route=>{const url=new URL(route.request().url());return url.hostname==="localhost" && ["3000","3101"].includes(url.port) ? route.continue() : route.abort();});
@@ -80,7 +83,7 @@ test("모의 계정으로 심화 문제·난이도 해제·주간 기록 공유�
   await page.route("**/api/game/leaderboard?**",route=>route.fulfill({json:{rows:[{rank:12,display_name:"나의 연습",earned_this_week:600,is_me:true}],my_rank:12}}));
   await login(page);await expect(page.getByRole("button",{name:/도전자 · 성장 보기/})).toBeVisible();
   await page.getByRole("button",{name:/도전자 · 성장 보기/}).click();await page.getByRole("button",{name:"내 주간 기록 공유"}).click();await expect.poll(()=>page.evaluate(()=>navigator.clipboard.readText())).toContain("12위");await page.keyboard.press("Escape");
-  await page.getByRole("navigation",{name:"미니게임"}).getByRole("button",{name:/워드 팝/}).click();const dialog=page.getByRole("dialog");await expect(dialog.getByRole("button",{name:/🔒 도전/})).toBeDisabled();await dialog.getByRole("button",{name:/✦ 심화/}).click();await expect(page.getByRole("region",{name:"전체 화면 게임"})).toContainText("한국어 미션 +300점");await page.keyboard.press("Escape");
+  await page.getByRole("navigation",{name:"미니게임"}).getByRole("button",{name:/워드 팝/}).click();await page.getByRole("button",{name:"초급 시작",exact:true}).click();await expect(page.getByRole("region",{name:"전체 화면 게임"})).toContainText("한국어 미션 +300점");await page.keyboard.press("Escape");
   await page.getByRole("button",{name:"공부 모드",exact:true}).click();await page.getByRole("navigation",{name:"공부 영역"}).getByRole("button",{name:/리딩/}).click();await expect(page.getByText(/현재 6\/9문제 해제/)).toBeVisible();await page.getByRole("button",{name:"6",exact:true}).click();await page.getByRole("button",{name:"홈으로",exact:true}).click();
   await page.getByRole("button",{name:"로그아웃",exact:true}).click();await page.getByRole("navigation",{name:"공부 영역"}).getByRole("button",{name:/리딩/}).click();await expect(page.getByText(/현재 3\/9문제 해제/)).toBeVisible();await expect(page.getByRole("button",{name:"🔒 6",exact:true})).toBeDisabled();
 });
@@ -95,7 +98,7 @@ test("모바일 홈은 네 아이콘을 스크롤하고 우측 도구와 소리 
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
-test("모의 책상 배치 저장으로 마스터 해제·세 액션 게임 도전 난이도와 9문제",async({page})=>{
+test("모의 책상 배치 저장으로 마스터 해제·게임은 초급에서 시작·학습 9문제",async({page})=>{
   const items=[{...lamp,rarity:"legendary",placed:false},{...lamp,item_id:"poster",name:"캠퍼스 포스터",rarity:"epic",placed:true}];
   let writes=0;
   await page.route("**/api/game/inventory",route=>route.fulfill({json:{items}}));
@@ -106,8 +109,8 @@ test("모의 책상 배치 저장으로 마스터 해제·세 액션 게임 도�
   await page.getByRole("complementary",{name:"나의 도구"}).getByRole("button",{name:"나의 책상 꾸미기"}).click();
   const room=page.getByRole("dialog");await room.getByRole("button",{name:/램프 · 1개/}).click();await room.getByLabel("책상에 배치",{exact:true}).check();await room.getByRole("button",{name:"배치 저장",exact:true}).click();await expect(room.getByText("책상 배치를 저장했습니다.")).toBeVisible();await page.keyboard.press("Escape");
   await expect(page.getByRole("button",{name:/마스터 · 성장 보기/})).toBeVisible();expect(writes).toBe(1);
-  for(const [name,text] of [["옐로캡 러시","1.95초"],["갈림길","2.5초"],["워드 팝","한국어 미션 +300점"]]){
-    await page.getByRole("navigation",{name:"미니게임"}).getByRole("button",{name:new RegExp(name)}).click();await page.getByRole("dialog").getByRole("button",{name:/✦ 도전/}).click();
+  for(const [name,text] of [["옐로캡 러시","3초"],["갈림길","3.8초"],["워드 팝","한국어 미션 +300점"]]){
+    await page.getByRole("navigation",{name:"미니게임"}).getByRole("button",{name:new RegExp(name)}).click();await page.getByRole("button",{name:"초급 시작",exact:true}).click();
 
     await expect(page.getByRole("region",{name:"전체 화면 게임"})).toContainText(text);await page.keyboard.press("Escape");
   }

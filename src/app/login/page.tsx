@@ -47,6 +47,8 @@ export default function LoginPage() {
 
   const canSubmit =
     state.status !== "unconfigured" &&
+    // 세션 복원과 수화가 끝나기 전에 폼을 제출하지 않습니다.
+    state.status !== "loading" &&
     email.trim().length > 0 &&
     password.length >= 6 &&
     !isLoading;

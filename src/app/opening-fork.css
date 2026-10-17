@@ -1,0 +1,50 @@
+/* 첫 방문은 영상 → 검은 화면 → 홈 순서로 전환합니다. */
+.opening-sequence { position:fixed; inset:0; z-index:200; background:#000; outline:none; opacity:1; }
+.opening-sequence>video { width:100%; height:100%; object-fit:cover; opacity:1; transition:opacity .65s ease; }
+.opening-sequence[data-phase=out]>video,.opening-sequence[data-phase=black]>video,.opening-sequence[data-phase=in]>video { opacity:0; }
+.opening-sequence[data-phase=in] { opacity:0; transition:opacity .85s ease; }
+.opening-controls { position:absolute; inset:auto 20px 25px; display:grid; justify-content:center; gap:10px; text-align:center; color:#fff; text-shadow:0 1px 5px #000; }
+.opening-controls p { font-size:11px; opacity:.8; }
+.opening-controls>div { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+.opening-controls button { padding:10px 17px; border:1px solid #fff6; border-radius:20px; background:#16102aab; backdrop-filter:blur(12px); font-size:12px; }
+.opening-controls button:focus-visible { outline:3px solid #b3f6ff; outline-offset:3px; }
+/* 지형과 캐릭터를 같은 카메라로 배치하는 실시간 절벽 맵입니다. */
+.fork-live-world { position:absolute; inset:0; overflow:hidden; pointer-events:none; isolation:isolate; z-index:0; }
+.fork-live-world canvas { display:block; width:100%; height:100%; }
+.fork-live-runner { position:absolute; width:125px; height:160px; transform:translate(-50%,-100%) rotate(var(--runner-lean,0deg)); transform-origin:50% 100%; filter:drop-shadow(0 8px 5px #193f5260); }
+.fork-live-runner:before { content:""; position:absolute; left:30%; right:30%; bottom:0; height:12px; border-radius:50%; background:#533f414d; filter:blur(3px); }
+.fork-live-runner .runner-back { width:100%; height:100%; }
+.game-fullscreen .cliff-game .word-intro { z-index:2; background:linear-gradient(#fff9e580,#fff9e5c9); }
+.game-fullscreen .cliff-game .fork-sign { top:42%; }
+.game-fullscreen .cliff-game .word-feedback { z-index:4; }
+/* 문제 패널을 문서 흐름에 두어 긴 뜻·작은 화면에서도 서로 겹치지 않습니다. */
+.game-fullscreen .word-pop { padding:57px 12px 25px; gap:0; }
+.word-pop .pop-hud { position:relative; inset:auto; width:min(760px,100%); flex-shrink:0; }
+.word-pop .pop-mission { position:relative; top:auto; display:grid; grid-template-columns:65px minmax(0,1fr) 65px; align-items:center; width:min(620px,100%); margin:12px auto 10px; padding:12px; gap:4px; border:1px solid #fff; border-radius:16px; background:linear-gradient(120deg,#fffff5f5,#e4f9f2f2); box-shadow:0 7px 24px #28566826; text-align:center; }
+.pop-mission-copy { grid-column:2; display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0; }
+.pop-mission-copy>span { font-size:10px; color:#5b807b; }.pop-mission-copy>strong { font-size:24px; font-weight:800; line-height:1.3; word-break:keep-all; overflow-wrap:anywhere; }.pop-mission-copy>small { font-size:10px; color:#527c71; }
+.word-pop .pop-mission>button { position:static; grid-column:3; font-size:10px; padding:10px 5px; border:1px solid #b6d8c9; border-radius:10px; background:#fffef1; }
+.word-pop .pop-board-wrap { width:min(620px,calc(100dvh - 335px),calc(100vw - 24px)); flex-shrink:0; }
+@media(max-width:600px) {
+  .game-fullscreen .word-pop { padding-top:50px; }
+  .word-pop .pop-hud { padding:8px 10px; }
+  .word-pop .pop-mission { grid-template-columns:45px minmax(0,1fr) 45px; padding:9px 6px; margin:8px auto; }
+  .pop-mission-copy>strong { font-size:20px; }.pop-mission-copy>span,.pop-mission-copy>small { font-size:9px; }
+  .word-pop .pop-mission>button { font-size:9px; padding:8px 2px; }
+  .word-pop .pop-board-wrap { width:min(620px,calc(100dvh - 290px),calc(100vw - 24px)); }
+  .fork-live-runner { width:95px; height:122px; }
+  .game-fullscreen .cliff-game .fork-sign { top:42%; }
+}
+@media(orientation:portrait) { .opening-sequence>video { object-fit:contain; } }
+@media(prefers-reduced-motion:reduce) { .opening-sequence,.opening-sequence>video { transition-duration:.01s; } }
+
+/* 원경 원화·인물이 없는 영상 하늘·실시간 지형을 서로 다른 깊이에 합성합니다. */
+.fork-cinematic-scene { position:absolute; inset:0; overflow:hidden; background:#8ebbc0; }
+.fork-painted-distance { position:absolute; inset:-3% -8%; background:url('/arcade/cliff-world-v1.webp') 50% 40%/cover no-repeat; transform:translateX(var(--fork-pan,0%)) scale(1.05); filter:saturate(1.08); }
+.fork-sky-crop { position:absolute; inset:0 0 auto; height:18%; overflow:hidden; opacity:.65; mask-image:linear-gradient(#000 35%,transparent); }
+.fork-sky-video { position:absolute; inset:0; overflow:hidden; }
+.fork-sky-video .scene-video { position:absolute; top:0; left:0; width:100%; height:625%; object-fit:fill; object-position:50% 0; }
+.fork-sun-haze { position:absolute; inset:0; background:radial-gradient(ellipse at 100% 4%,#ffe9ac70,transparent 42%); mix-blend-mode:screen; pointer-events:none; }
+.fork-webgl-host { z-index:1; }.fork-canvas-world { z-index:1; }
+.game-fullscreen .cliff-world { z-index:2; }
+.fork-graphics-note { z-index:2; }

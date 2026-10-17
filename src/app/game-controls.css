@@ -1,0 +1,31 @@
+/* 네 게임의 상태는 같은 크기·좌표의 단일 캡슐 안에 배치합니다. */
+.game-fullscreen .arcade-stats { position:fixed; top:54px; left:50%; right:auto; translate:-50% 0; z-index:15; width:min(780px,calc(100% - 32px)); height:64px; max-width:none; margin:0; padding:9px 22px; display:flex; align-items:center; justify-content:space-evenly; gap:0; flex-wrap:nowrap; color:#244e59; border:1px solid #ffffffeb; border-radius:999px; background:linear-gradient(110deg,#fffef4ed,#edf8f1ed); box-shadow:0 6px 24px #264b5526,inset 0 1px 0 #fff; backdrop-filter:blur(14px); pointer-events:none; }
+.game-fullscreen .arcade-stats>* { flex:1 1 0; min-width:0; width:auto; height:100%; display:flex; align-items:center; justify-content:center; gap:5px; padding:0 10px; font-size:12px; line-height:1.35; font-weight:700; text-align:center; border:0; border-radius:0; background:none; box-shadow:none; color:inherit; }
+.game-fullscreen .arcade-stats>*+* { border-left:1px solid #668d842b; }
+.game-fullscreen .arcade-stats strong { font-size:22px; font-weight:800; font-variant-numeric:tabular-nums; color:#176b70; }
+.fork-stats>div { flex-direction:column; gap:2px; }.fork-stats span { font-size:11px; }.fork-stats meter { width:80px; max-width:100%; }.fork-stats .stamina { min-width:0; }
+.game-fullscreen .arcade-stats .cab-stage-label { font-size:11px; }.game-fullscreen .arcade-stats .memory-tempo { font-size:12px; }.game-fullscreen .arcade-stats .pop-stage-label { font-size:12px; }
+.game-fullscreen .arcade-stats .memory-tempo>span { padding:0; background:none; border-radius:0; }.game-fullscreen .arcade-stats .pop-stats>span:last-child { margin:0; }
+.game-fullscreen .word-question { top:141px; padding:13px 18px; }
+.game-fullscreen .cab-play>div:first-child { top:141px; }
+.game-fullscreen .word-pop { padding-top:130px; }.word-pop .pop-mission { grid-template-columns:minmax(0,1fr); }.pop-mission-copy { grid-column:1; }
+.game-fullscreen .flashcard-game { padding-top:145px!important; }
+.game-controls>div { gap:7px; }.game-controls .sound-button,.game-pause-button { display:grid; place-items:center; width:32px; height:32px; border-radius:10px; background:#fffdf1e8; border:1px solid #fff; color:#315e66; }
+.game-pause-button:disabled { opacity:.35; }.game-pause-button[aria-pressed=true] { color:#a73332; background:#fff0e9; }.game-pause-button:focus-visible { outline:3px solid #df5e5a; outline-offset:2px; }
+.arcade-pause-notice { position:absolute; z-index:12; top:50%; left:50%; translate:-50% -50%; width:min(420px,calc(100% - 40px)); padding:25px; border-radius:18px; text-align:center; background:#fffdf0f5; font-weight:700; color:#315e66; box-shadow:0 10px 40px #244e5940; }
+.game-content:has([data-paused=true]) * { animation-play-state:paused!important; }
+.memory-tempo>span { padding:8px 13px; background:#fffdf1; border-radius:10px; font-weight:800; }
+
+/* 기본 흰색 트랙과 빨간 게이지를 모든 단어장 진행률에 동일하게 적용합니다. */
+.vocab-home-progress progress,.vocab-library progress { appearance:none; -webkit-appearance:none; display:block; border:1px solid #e8d9d9; border-radius:7px; overflow:hidden; background:#fff; accent-color:#ed3945; }
+.vocab-home-progress progress::-webkit-progress-bar,.vocab-library progress::-webkit-progress-bar { background:#fff; border-radius:7px; }
+.vocab-home-progress progress::-webkit-progress-value,.vocab-library progress::-webkit-progress-value { background:#ed3945; border-radius:7px; }
+.vocab-home-progress progress::-moz-progress-bar,.vocab-library progress::-moz-progress-bar { background:#ed3945; border-radius:7px; }
+@media(max-width:600px) {
+  .game-fullscreen .arcade-stats { top:50px; width:calc(100% - 16px); height:58px; padding:8px 11px; }
+  .game-fullscreen .arcade-stats>* { padding:0 5px; gap:3px; font-size:10px; }.game-fullscreen .arcade-stats strong { font-size:17px; }
+  .game-fullscreen .arcade-stats .cab-stage-label,.game-fullscreen .arcade-stats .memory-tempo,.game-fullscreen .arcade-stats .pop-stage-label { font-size:9px; }.fork-stats span { font-size:9px; }.fork-stats meter { width:62px; }
+  .game-fullscreen .word-question,.game-fullscreen .cab-play>div:first-child { top:121px; padding:10px 12px; }
+  .game-fullscreen .word-pop { padding-top:115px; }.game-fullscreen .flashcard-game { padding-top:125px!important; }
+  .game-controls .sound-button,.game-pause-button { width:30px; height:30px; }
+}

@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "./fixtures";
 
 test.beforeEach(async ({ context }) => {
   // 잘못 연결되더라도 실제 채점·Supabase·외부 서비스에 요청을 보내지 않습니다.

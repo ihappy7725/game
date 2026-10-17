@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 import { VOCAB } from "../src/lib/vocab";
 
 test.beforeEach(async ({ context }) => {

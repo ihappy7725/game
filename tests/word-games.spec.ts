@@ -1,4 +1,4 @@
-import { expect, test, type Page, type Locator } from "@playwright/test";
+import { expect, test, type Page, type Locator } from "./fixtures";
 import { VOCAB } from "../src/lib/vocab";
 import { forkDuration, forkEnergy } from "../src/lib/word-arcade";
 
@@ -27,17 +27,16 @@ async function choose(game: Locator, kind: "갈림길" | "서브웨이", correct
   throw new Error("선택지를 찾지 못했습니다.");
 }
 
-test("갈림길 정답 통과·체력 보급·낙석 피해와 점프 회피·오답 즉시 추락", async ({ page }) => {
+test("갈림길 정답 통과·체력 보급·맞바람 피해·오답 즉시 추락", async ({ page }) => {
   const errors: string[] = []; page.on("pageerror", e => errors.push(e.message));
   const game = await open(page, "갈림길"); await game.getByRole("button", { name: "절벽 달리기 시작" }).click();
   for (let i = 0; i < 8; i++) {
     await choose(game, "갈림길");
-    if (i === 7) { await page.clock.fastForward(1300); await game.getByRole("button", { name: "점프 · SPACE", exact: true }).click(); }
-    await page.clock.fastForward(forkDuration(0, i) - (i === 7 ? 1300 : 0) + 30);
+    await page.clock.fastForward(forkDuration(0, i) + 30);
     await expect(game.getByLabel("갈림길 기록")).toContainText(`${i + 1}개 통과`);
     if ((i + 1) % 3 === 0) await expect(game.getByRole("status")).toContainText("보급 획득");
-    if (i === 3) await expect(game.getByRole("status")).toContainText("낙석 충돌");
-    if (i === 7) await expect(game.getByRole("status")).toContainText("낙석 점프 성공");
+    if (i === 3) await expect(game.getByRole("status")).toContainText("맞바람");
+    if (i === 7) await expect(game.getByRole("status")).toContainText("맞바람");
     await page.clock.fastForward(810);
   }
   await choose(game, "갈림길", false); await page.clock.fastForward(forkDuration(0, 8) + 30);
@@ -53,11 +52,11 @@ test("갈림길 시간 초과·일시정지·탭 숨김·Esc 타이머 정리", 
   await page.clock.fastForward(1000); await game.getByRole("button", { name: "일시정지", exact: true }).click();
   const meaning = await game.getByLabel("갈림길 한국어 뜻").textContent();
   await page.clock.fastForward(60_000); await expect(game.getByLabel("갈림길 한국어 뜻")).toHaveText(meaning!);
-  await game.getByRole("button", { name: "계속 달리기" }).click();
+  await game.getByRole("button", { name: "계속하기" }).click();
   await page.evaluate(() => { Object.defineProperty(document, "hidden", { configurable: true, value: true }); document.dispatchEvent(new Event("visibilitychange")); });
-  await expect(game.getByRole("button", { name: "계속 달리기" })).toBeVisible();
+  await expect(game.getByRole("button", { name: "계속하기" })).toBeVisible();
   await page.evaluate(() => { Object.defineProperty(document, "hidden", { configurable: true, value: false }); });
-  await game.getByRole("button", { name: "계속 달리기" }).click(); await page.clock.fastForward(3000);
+  await game.getByRole("button", { name: "계속하기" }).click(); await page.clock.fastForward(3000);
   await expect(game.getByRole("status")).toContainText("고르지 못했어요"); await page.clock.fastForward(810);
   await expect(game.getByLabel("갈림길 결과")).toBeVisible(); await page.keyboard.press("Escape");
   await page.clock.fastForward(60_000); await expect(game).toHaveCount(0);
@@ -97,9 +96,9 @@ test("새 아케이드 편곡의 드럼·화음 출력과 음소거", async ({ p
   expect(await page.evaluate(() => (window as unknown as { soundProbe: { master: GainNode } }).soundProbe.master.gain.value)).toBe(0);
 });
 
-test("갈림길 체력은 보급 상한·낙석 피해·0 하한을 지킴", () => {
-  expect(forkEnergy(95, 3000, true, false, false)).toBe(100);
-  expect(forkEnergy(50, 0, false, true, false)).toBe(28);
-  expect(forkEnergy(50, 0, false, true, true)).toBe(50);
-  expect(forkEnergy(1, 3000, false, true, false)).toBe(0);
+test("갈림길 체력은 보급 상한·맞바람 피해·0 하한을 지킴", () => {
+  expect(forkEnergy(95, 3000, true, false)).toBe(100);
+  expect(forkEnergy(50, 0, false, true)).toBe(38);
+  expect(forkEnergy(50, 0, false, false)).toBe(50);
+  expect(forkEnergy(1, 3000, false, true)).toBe(0);
 });

@@ -20,6 +20,11 @@ export function GachaPanel({ userId, onInventoryChanged }: { userId: string; onI
   const fieldId = useId();
   const balance = snapshot?.data?.coin_balance;
   const enough = balance !== undefined && balance >= count * DISPLAY_COST;
+  const grouped = new Map<string, GachaResult["items"][number] & { drawn: number }>();
+  for (const item of result?.items ?? []) {
+    const previous = grouped.get(item.id);
+    grouped.set(item.id, { ...item, quantity: Math.max(item.quantity, previous?.quantity ?? 0), drawn: (previous?.drawn ?? 0) + 1 });
+  }
 
   async function draw() {
     if (locked.current || uncertain || !confirming || !enough) return;
@@ -74,8 +79,8 @@ export function GachaPanel({ userId, onInventoryChanged }: { userId: string; onI
       {result ? <section aria-label="뽑기 결과" className="space-y-3 rounded-xl border border-white/15 bg-black/20 p-4">
         <h4 className="font-semibold">새로운 책상 아이템</h4>
         <p role="status" className="text-sm">{result.cost.toLocaleString("ko-KR")}코인 사용 · 남은 코인 {result.coin_balance.toLocaleString("ko-KR")}</p>
-        <ul className="grid gap-3 sm:grid-cols-2">{result.items.map((item, index) => <li key={`${item.id}-${index}`} className="rounded-xl border border-white/10 bg-white/5 p-4">
-          <div className="gacha-result-art"><DeskItemArt id={item.id} emoji={item.emoji}/></div><p className="mt-2 text-sm font-medium">{item.name}</p><p className="mt-1 text-xs text-white/60">{RARITY_NAMES[item.rarity] ?? "아이템"} · 보유 {item.quantity}개</p>{item.quantity > 1 ? <p className="gacha-duplicate">중복도 수량으로 보관했어요</p> : null}
+        <ul className="grid gap-3 sm:grid-cols-2">{Array.from(grouped.values()).map(item => <li key={item.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="gacha-result-art"><DeskItemArt id={item.id} emoji={item.emoji}/></div><p className="mt-2 text-sm font-medium">{item.name}</p><p className="mt-1 text-xs text-white/60">{RARITY_NAMES[item.rarity] ?? "아이템"} · 보유 {item.quantity}개</p><p className="mt-1 text-xs">이번 뽑기 {item.drawn}개</p>{item.quantity > 1 ? <p className="gacha-duplicate">중복도 수량으로 보관했어요</p> : null}
         </li>)}</ul>
         <p className="text-xs text-white/60">나의 책상에서 아이템을 배치할 수 있습니다.</p>
       </section> : null}
