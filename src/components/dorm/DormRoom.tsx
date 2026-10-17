@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useRef, useState, type PointerEvent, type KeyboardEvent } from "react";
+import Image from "next/image";
 import { ApiError, fetchInventory, placeInventoryItem, type InventoryItem } from "@/lib/api";
 import { gameError, tokenForGameUser } from "@/lib/game-state";
 import { useGameResource } from "./useGameResource";
@@ -69,7 +70,7 @@ export function DormRoom({ userId, revision }: { userId: string; revision: numbe
       <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-lg font-semibold">나의 책상</h3><button type="button" onClick={inventory.reload} disabled={saving || inventory.loading} className={actionClass}>보유 아이템 새로고침</button></div>
       <p className="desk-instructions">보유 아이템을 하나씩 선택해 놓고, 직접 끌거나 방향키로 움직인 뒤 <b>배치 저장</b>을 눌러주세요. 같은 종류는 하나씩 배치하며 중복 수량은 보관합니다.</p>
       <div aria-label="책상 배치 미리보기" className="desk-scene">
-        <div className="desk-room-art" aria-hidden="true"/>
+        <Image className="desk-room-art" src="/backgrounds/empty-campus-desk-v1.webp" alt="" fill sizes="(max-width: 700px) 100vw, 900px" unoptimized loading="eager"/>
 
         <div className="desk-placement-area" ref={area} aria-label="책상 배치 영역">
           {inventory.data?.items.map((item) => {

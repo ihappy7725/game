@@ -42,14 +42,16 @@ export function WritingWorkspace({ embedded = false }: { embedded?: boolean }) {
     [essay],
   );
   // 백엔드가 50자 미만을 거부하므로 버튼에서 미리 막습니다.
-  const canSubmit = essay.trim().length >= 50 && !isLoading;
+  const canSubmit = authState.status === "signed-in" && essay.trim().length >= 50 && !isLoading;
 
   async function handleSubmit() {
+    if (!canSubmit) return;
     setIsLoading(true);
     setError(null);
     setResult(null);
     try {
-      const accessToken = (await getAccessToken()) ?? undefined;
+      const accessToken = await getAccessToken();
+      if (!accessToken) throw new Error("로그인 세션을 확인하지 못했어요. 다시 로그인해 주세요.");
       const data = await evaluateWriting(
         {
           essay,
@@ -149,14 +151,14 @@ export function WritingWorkspace({ embedded = false }: { embedded?: boolean }) {
             )}
           </motion.button>
 
-          {/* 비로그인 상태에서는 채점은 되지만 기록이 남지 않습니다. */}
+          {/* 입력 연습은 열어 두고 유료 채점은 로그인 후에만 요청합니다. */}
           {authState.status === "signed-out" ? (
             <p className="text-xs leading-relaxed text-white/40">
-              로그인하지 않아 이번 채점 결과는 저장되지 않습니다.{" "}
+              AI 채점은 로그인 후 이용할 수 있습니다.{" "}
               <Link href="/login" className="text-accent-300 hover:underline">
                 로그인
               </Link>
-              하면 학습 기록에 쌓입니다.
+              하고 채점 결과를 학습 기록에 저장하세요.
             </p>
           ) : null}
 

@@ -16,10 +16,9 @@ gamification_api.py.parked 에 테이블·함수 이름이 다른 별개 구현�
 골라 쓰세요. 비교는 GAMIFICATION_BACKEND.md 를 보세요.
 """
 
-from public_profiles import rank_identity
 import json
 import logging
-from public_profiles import rank_identity
+from public_profiles import fetch_coin_ranking, rank_identity
 import os
 import random
 from datetime import date, datetime, timedelta, timezone
@@ -33,6 +32,7 @@ from openai import OpenAI, OpenAIError
 from pydantic import BaseModel, Field
 from supabase import Client, create_client
 from game_records import register_game_records
+from runtime_settings import cors_origins, paid_grading_enabled
 
 # .env 파일의 환경 변수 로드
 load_dotenv()
@@ -50,6 +50,7 @@ SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
 CHAT_MODEL = os.getenv("CHAT_MODEL", "gpt-4o")
 STT_MODEL = os.getenv("STT_MODEL", "whisper-1")
+PAID_GRADING_ENABLED = paid_grading_enabled(os.environ)
 
 # Whisper API 업로드 제한(25MB)과 허용 확장자
 MAX_AUDIO_BYTES = 25 * 1024 * 1024
@@ -68,14 +69,14 @@ def _looks_unfilled(value: Optional[str]) -> bool:
     return not value or not value.isascii()
 
 
-if _looks_unfilled(OPENAI_API_KEY):
+if PAID_GRADING_ENABLED and _looks_unfilled(OPENAI_API_KEY):
     raise RuntimeError(
         "OPENAI_API_KEY가 설정되지 않았습니다. .env의 값이 안내 문구 그대로인지 확인하고, "
         "https://platform.openai.com/api-keys 에서 발급한 실제 키"
         "(sk- 로 시작하는 ASCII 문자열)를 넣어 주세요."
     )
 
-openai_client = OpenAI(api_key=OPENAI_API_KEY, timeout=120.0, max_retries=2)
+openai_client = None if _looks_unfilled(OPENAI_API_KEY) else OpenAI(api_key=OPENAI_API_KEY, timeout=120.0, max_retries=2)
 
 # Supabase는 선택적으로 동작: 설정이 없으면 채점은 되지만 저장만 건너뜀
 supabase_client: Optional[Client] = None
@@ -109,10 +110,10 @@ async def catch_unhandled_errors(request: Request, call_next):
         )
 
 
-# CORS 설정: 프론트엔드(로컬 3000번 포트)의 접근 허용
+# 배포 주소는 CORS_ORIGINS로 추가합니다. 미설정 로컬 환경은 기존 주소를 유지합니다.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=cors_origins(os.getenv("CORS_ORIGINS")),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -132,7 +133,7 @@ class WritingEvaluateRequest(BaseModel):
     essay: str = Field(min_length=50, max_length=20000, description="학생이 작성한 에세이 원문")
     question: Optional[str] = Field(default=None, max_length=8000, description="문제(프롬프트) 지문")
     task_type: Literal["independent", "integrated", "academic_discussion"] = "independent"
-    # user_id는 Authorization 헤더가 없을 때만 쓰이는 폴백 값입니다.
+    # 이전 클라이언트와의 호환 필드입니다. 저장 신원은 검증된 JWT에서만 얻습니다.
     user_id: Optional[str] = None
 
 
@@ -327,7 +328,7 @@ Rules you must follow:
 # ---------------------------------------------------------------------------
 
 
-def _resolve_user_id(authorization: Optional[str], fallback_user_id: Optional[str]) -> Optional[str]:
+def _resolve_user_id(authorization: Optional[str]) -> Optional[str]:
     """Authorization 헤더의 Supabase JWT에서 사용자 ID를 확인한다.
 
     서버는 service role 키로 동작하므로 RLS가 적용되지 않는다. 따라서 토큰이
@@ -343,7 +344,13 @@ def _resolve_user_id(authorization: Optional[str], fallback_user_id: Optional[st
         if user is None or not getattr(user, "id", None):
             raise HTTPException(status_code=401, detail="유효하지 않은 인증 토큰입니다.")
         return str(user.id)
-    return fallback_user_id
+    return None
+
+
+def _require_paid_grading() -> None:
+    """테스트 배포에서는 게임/기록을 유지하며 유료 호출을 닫아 둡니다."""
+    if not PAID_GRADING_ENABLED or openai_client is None:
+        raise HTTPException(status_code=503, detail="AI 채점은 현재 준비 중입니다. 작성·녹음 연습과 게임은 계속 이용할 수 있습니다.")
 
 
 def _evaluate_with_gpt(
@@ -411,7 +418,14 @@ async def root():
         "status": "success",
         "message": "TOEFL API 서버가 정상적으로 실행 중입니다!",
         "supabase_enabled": supabase_client is not None,
+        "grading_enabled": PAID_GRADING_ENABLED and openai_client is not None,
     }
+
+
+@app.get("/healthz")
+async def healthz():
+    """외부 API를 호출하지 않는 배포 상태 검사입니다."""
+    return {"status": "ok"}
 
 
 @app.post("/api/writing/evaluate", response_model=WritingEvaluateResponse)
@@ -420,7 +434,8 @@ async def evaluate_writing(
     authorization: Optional[str] = Header(default=None),
 ):
     """에세이를 ETS 루브릭으로 채점하고 결과를 Supabase에 저장한다."""
-    user_id = _resolve_user_id(authorization, payload.user_id)
+    user_id = _require_user_id(authorization)
+    _require_paid_grading()
 
     word_count = len(payload.essay.split())
     question_text = payload.question or "(제공되지 않음 - 에세이 내용만으로 평가)"
@@ -467,7 +482,8 @@ async def evaluate_speaking(
     authorization: Optional[str] = Header(default=None),
 ):
     """음성을 Whisper로 전사한 뒤 ETS 루브릭으로 채점하고 Supabase에 저장한다."""
-    resolved_user_id = _resolve_user_id(authorization, user_id)
+    resolved_user_id = _require_user_id(authorization)
+    _require_paid_grading()
 
     filename = audio.filename or "recording.webm"
     extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
@@ -562,9 +578,9 @@ def _require_supabase() -> Client:
 
 
 def _require_user_id(authorization: Optional[str]) -> str:
-    """조회 엔드포인트용: 유효한 Bearer 토큰에서 사용자 ID를 반드시 얻어낸다.
+    """개인 데이터와 채점용: 유효한 Bearer 토큰에서 사용자 ID를 반드시 얻어낸다.
 
-    개인 데이터를 다루므로 채점 엔드포인트와 달리 폴백 user_id를 허용하지 않는다.
+    개인 데이터를 다루므로 요청 본문의 user_id를 신원으로 허용하지 않는다.
     백엔드가 service role 키로 동작해 RLS를 우회하기 때문에, 쿼리스트링으로 받은
     user_id를 믿으면 남의 기록이 그대로 노출된다.
     """
@@ -574,7 +590,7 @@ def _require_user_id(authorization: Optional[str]) -> str:
             status_code=401,
             detail="로그인이 필요합니다. Authorization: Bearer <access_token> 헤더를 포함해 주세요.",
         )
-    user_id = _resolve_user_id(authorization, None)
+    user_id = _resolve_user_id(authorization)
     if not user_id:
         raise HTTPException(status_code=401, detail="유효하지 않은 인증 토큰입니다.")
     return user_id
@@ -1390,20 +1406,14 @@ async def get_leaderboard(
     user_id = _require_user_id(authorization)
 
     try:
-        response = (
-            client.table("game_weekly_leaderboard")
-            .select("*")
-            .order("earned_this_week", desc=True)
-            .limit(limit)
-            .execute()
-        )
+        ranking_rows, profiles_ready = fetch_coin_ranking(client, limit)
     except Exception as exc:
         logger.exception("랭킹 조회 실패")
         raise HTTPException(status_code=502, detail=f"랭킹 조회에 실패했습니다: {exc}") from exc
 
     rows: List[LeaderboardRow] = []
     my_rank: Optional[int] = None
-    for index, row in enumerate(getattr(response, "data", None) or [], start=1):
+    for index, row in enumerate(ranking_rows, start=1):
         is_me = str(row.get("user_id")) == user_id
         if is_me:
             my_rank = index
@@ -1416,7 +1426,7 @@ async def get_leaderboard(
                 is_me=is_me,
             )
         )
-    return LeaderboardResponse(rows=rows, my_rank=my_rank, profiles_ready=all("avatar_id" in row for row in (getattr(response, "data", None) or [])))
+    return LeaderboardResponse(rows=rows, my_rank=my_rank, profiles_ready=profiles_ready)
 
 
 @app.get("/api/game/mistakes", response_model=MistakesResponse)

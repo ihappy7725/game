@@ -192,3 +192,23 @@ node scripts/build-sticker-catalog.mjs
 
 - Pinterest 검색은 새 탭을 여는 방식입니다. 앱 내부에 Pinterest 전체 검색 결과를 자동으로 가져오는 연결은 구현하지 않았습니다. 공식 파트너 검색은 OAuth와 별도 접근 조건이 있습니다: https://raw.githubusercontent.com/pinterest/pinterest-python-generated-api-client/main/docs/SearchApi.md
 - 브라우저 보관함 이미지는 다른 기기·계정·방문자에게 자동 공유되지 않습니다. 공용 배포용은 프로젝트의 `public/stickers/` 목록을 사용합니다.
+
+
+## 캠퍼스 프로필·빈 책상 (2026-10-17)
+
+내장 `imagegen` 기본 도구로 신규 제작했습니다. 키/API CLI를 사용하지 않았습니다. 8명은 하나의 4×2 아틀라스 자산으로 만들었으며 CSS의 400%×200% 배경 위치로 잘라 원형으로 표시합니다. 웹용 WebP 변환만 수행했습니다.
+
+- 프로필 원본/웹용: `public/profiles/campus-students-v1.png`, `public/profiles/campus-students-v1.webp`
+- 빈 책상 웹용: `public/backgrounds/empty-campus-desk-v1.webp`
+
+프로필 최종 프롬프트:
+
+```text
+One production avatar contact sheet for an English campus learning game. Exactly eight adult college student shoulder-up portraits, aligned 4 columns × 2 rows, equal square cells with no gutters, centered circular portraits on pastel solid backgrounds. Premium polished 3D animated family-film quality, detailed soft hair/eyes, warm friendly expressions. Top row four males: East Asian black straight hair/dark eyes/navy varsity jacket; blond/blue eyes/cream sweater; brown curls/hazel eyes/olive hoodie; dark-skinned black short curls/brown eyes/coral sweatshirt. Bottom row four females: East Asian black bob/dark eyes/teal knit; blond wavy/blue eyes/lavender cardigan; tan brown wavy/brown eyes/peach blouse; red hair/green eyes/mint hoodie. Original diverse faces, heads fully inside circles, no text/logo/watermark. Landscape 2:1.
+```
+
+책상 최종 프롬프트(메모리 카드 이미지는 조명·재질의 참고):
+
+```text
+New empty customizable student desk scene, landscape 16:9. Premium detailed 3D animation illustration like a warm university library. Large completely EMPTY honey oak desk surface fills lower 52%, warm cream stone walls and centered arched window, softly focused ivy league campus clocktower/trees outside. Afternoon sunshine, realistic wood grain, crafted rounded dimensional desk front edge in lower 10%. Slightly elevated frontal view, broad horizontal area for draggable inventory. No books, plants, lamps, loose objects, people or other desks. Minimal architectural frame and empty built-in shelves at far sides. No text, watermark or UI.
+```

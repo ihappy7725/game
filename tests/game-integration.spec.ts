@@ -93,6 +93,20 @@ test("게스트 연습은 게임 API를 호출하지 않음", async ({ page }) =
   expect(calls).toBe(0);
 });
 
+test("로그인한 택시 결과의 보상·순위 저장·재시작은 작은 화면에서도 모두 보임", async ({ page }) => {
+  await login(page); await startCab(page);
+  for (let i = 0; i < 3; i++) await answer(page, false);
+  await expect(page.getByRole("heading", { name: "운행 종료" })).toBeVisible();
+  for (const viewport of [{ width: 320, height: 568 }, { width: 844, height: 390 }]) {
+    await page.setViewportSize(viewport);
+    for (const name of ["보상·오답 저장", "주간 게임 기록 저장", "다시 달리기", "게임 점수 공유"]) {
+      const box = (await page.getByRole("button", { name, exact: true }).boundingBox())!;
+      expect(box.y, name).toBeGreaterThanOrEqual(0); expect(box.y + box.height, name).toBeLessThanOrEqual(viewport.height);
+    }
+    await page.screenshot({ path: test.info().outputPath(`signed-result-${viewport.width}.png`) });
+  }
+});
+
 test("지급 응답 유실 시 재지급 없이 안내하고 오답은 별도로 저장", async ({ page }) => {
   let rewards = 0;
   let mistakes = 0;

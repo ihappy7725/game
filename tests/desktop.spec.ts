@@ -10,6 +10,14 @@ test.beforeEach(async ({ context }) => {
 });
 
 const windowFor = (page: Page, name: string) => page.getByRole("region", { name, exact: true });
+async function loginForGrading(page: Page) {
+  await page.goto("/login");
+  await page.getByLabel("이메일", { exact: true }).fill("learner@example.test");
+  await page.getByLabel("비밀번호").fill("local-test-password");
+  await page.getByRole("button", { name: "로그인", exact: true }).click();
+  await expect(page).toHaveURL(/\/history$/);
+  await page.goto("/");
+}
 async function openApp(page: Page, name: string) {
   const home = page.getByRole("button", {name:"홈으로",exact:true});
   if(await home.isVisible()) await home.click();
@@ -19,7 +27,7 @@ async function openApp(page: Page, name: string) {
 }
 
 test("학습 화면 전환·입력과 모의 채점 결과 유지·닫기", async ({ page }) => {
-  await page.goto("/");
+  await loginForGrading(page);
   await expect(page.getByText("API 연결됨")).toHaveCount(0);
   await openApp(page,"Writing AI");
   const writing=windowFor(page,"라이팅");
@@ -53,7 +61,7 @@ test("가상 마이크 녹음·재생·모의 채점 유지와 닫기 정리", a
       return stream;
     };
   });
-  await page.goto("/");
+  await loginForGrading(page);
   await openApp(page, "Speaking AI");
   const speaking = windowFor(page, "스피킹");
   await speaking.getByRole("button", { name: "녹음 시작", exact: true }).click();

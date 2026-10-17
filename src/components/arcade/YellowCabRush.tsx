@@ -4,11 +4,12 @@ import { gameCue, useGameLoop, useGameOutcome } from "@/lib/game-feedback";
 import { GameOutcome } from "./GameOutcome";
 import { ShareScore } from "./ShareScore";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Heart, Keyboard, RotateCcw, Zap } from "lucide-react";
 import { ArcadeEffects } from "./ArcadeEffects";
 import { buildLanes, shuffledDeck, type VocabItem } from "@/lib/vocab";
+import { ResultPages } from "./ResultPages";
 import { GameHud } from "./GameHud";
 import { useGamePause } from "./GamePause";
 import { useArcadeTicker } from "./useArcadeTicker";
@@ -240,11 +241,11 @@ export function YellowCabRush({ difficulty = 0 }: { difficulty?: number }) {
         </GameHud>
 
         {paused && phase === "running" ? <div className="arcade-pause-notice" role="status">잠깐 쉬는 중 · 우측 상단 재생 버튼을 눌러주세요</div> : null}
-        {phase === "over" ? <GameOutcome outcome={outcome}/> : null}
         {phase === "ready" ? (
           <IntroPanel difficulty={difficulty} onStart={startGame} checkingSession={auth.status === "loading"} />
         ) : phase === "over" ? (
           <GameOverPanel
+            celebration={<GameOutcome outcome={outcome}/>}
             attempt={attempt} difficulty={difficulty} elapsedMs={rankedMs}
             score={score}
             bestCombo={bestCombo}
@@ -382,6 +383,7 @@ function PlayField({
 }
 
 function GameOverPanel({
+  celebration,
   attempt, difficulty, elapsedMs,
   score,
   bestCombo,
@@ -391,6 +393,7 @@ function GameOverPanel({
   correctCount,
   answers,
 }: {
+  celebration: ReactNode;
   attempt: RankedAttempt | null; difficulty: number; elapsedMs: number;
   score: number;
   bestCombo: number;
@@ -403,32 +406,15 @@ function GameOverPanel({
   const [saving, setSaving] = useState(false);
   return (
     <div className="cab-result relative px-6 py-8 text-center">
-      <h3 className="text-xl font-semibold tracking-tight">운행 종료</h3>
-
-      <div className="mt-4 flex items-end justify-center gap-6">
-        <div>
-          <p className="text-[11px]" style={{ color: "var(--os-ink-dim)" }}>
-            최종 점수
-          </p>
-          <p className="font-mono text-4xl font-semibold tabular-nums">{score.toLocaleString("ko-KR")}</p>
-        </div>
-        <div className="pb-1.5">
-          <p className="text-[11px]" style={{ color: "var(--os-ink-dim)" }}>
-            최고 콤보
-          </p>
-          <p className="font-mono text-2xl tabular-nums" style={{ color: "var(--os-accent)" }}>
-            {bestCombo}
-          </p>
-        </div>
-      </div>
+      <header className="cab-end-heading"><h3 className="text-xl font-semibold tracking-tight">운행 종료</h3><p>{score.toLocaleString("ko-KR")}점 · 최고 콤보 {bestCombo}</p></header>
+      {celebration}
 
       {missed.length > 0 ? (
-        <div className="mx-auto mt-6 max-w-md text-left">
+        <div className="cab-review mx-auto mt-6 max-w-md text-left">
           <p className="mb-2 text-xs font-medium" style={{ color: "var(--os-ink-dim)" }}>
             놓친 단어 {missed.length}개 — 복습하세요
           </p>
-          <ul className="space-y-1.5">
-            {missed.map((item) => (
+          <ResultPages pageSize={1} label="놓친 단어 복습" items={missed.map((item) => (
               <li
                 key={item.word}
                 className="flex flex-wrap items-baseline gap-x-2 rounded-lg px-3 py-2 text-sm"
@@ -440,8 +426,7 @@ function GameOverPanel({
                   {item.meaning}
                 </span>
               </li>
-            ))}
-          </ul>
+            ))}/>
         </div>
       ) : null}
 

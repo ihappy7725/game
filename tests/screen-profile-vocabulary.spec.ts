@@ -1,6 +1,9 @@
 import { test, expect, type Page } from "./fixtures";
 import vocabulary from "../src/data/vocabulary.json";
 import backup from "../src/data/vocabulary.backup.json";
+import { POP_RECORD_KEY } from "../src/lib/pop-records";
+import { cabDuration } from "../src/lib/game-tempo";
+import { VOCAB } from "../src/lib/vocab";
 import { popLegalMove } from "../src/lib/word-pop";
 import { branchPose, FORK_START } from "../src/lib/fork-world";
 
@@ -23,6 +26,7 @@ test("4,000개 형식·214개 백업·철자·마지막 블록과 예문·저장
 });
 
 async function fits(page: Page) {
+  await expect(page.locator("html")).toHaveCSS("overflow-y", "hidden");
   const overflow = await page.locator(".game-fullscreen").evaluate(el => ({ x: el.scrollWidth - el.clientWidth, y: el.scrollHeight - el.clientHeight }));
   expect(overflow).toEqual({ x: 0, y: 0 });
   for (const button of await page.locator(".game-fullscreen button:visible").all()) {
@@ -56,6 +60,19 @@ test("갈림길 왼쪽·오른쪽 장면 좌표와 안개 너머 연장", async 
   // +Z를 보는 카메라의 화면 왼쪽은 장면 +X: 월드 X를 반전합니다.
   expect(-left.x).toBeGreaterThan(0); expect(-right.x).toBeLessThan(0);
 
+});
+
+test("방향키가 실제 3D 캐릭터의 왼쪽·오른쪽 이동과 일치", async ({ page }) => {
+  await page.goto("/"); await page.clock.install({ time: new Date(0) }); await page.clock.pauseAt(new Date(1000));
+  for (const [key, sign] of [["ArrowLeft", 1], ["ArrowRight", -1]] as const) {
+    await page.getByRole("navigation", { name: "미니게임" }).getByRole("button", { name: "갈림길", exact: true }).click();
+    await expect(page.locator(".fork-live-world")).toHaveAttribute("data-renderer", "webgl");
+    await page.getByRole("button", { name: "절벽 달리기 시작", exact: true }).click(); await page.keyboard.press(key);
+    await expect(page.locator(key === "ArrowLeft" ? ".fork-0" : ".fork-1")).toHaveAttribute("aria-pressed", "true");
+    await page.clock.fastForward(3850); await page.clock.runFor(380);
+    expect(Number(await page.locator(".fork-webgl-host canvas").getAttribute("data-player-x")) * sign).toBeGreaterThan(0);
+    await page.screenshot({ path: test.info().outputPath(`fork-${key}.png`) }); await page.keyboard.press("Escape");
+  }
 });
 
 test("움직이는 큐브를 두 번 클릭해 실제 교환·팡 효과와 점수", async ({ page }) => {
@@ -105,6 +122,29 @@ test("기존 계정 프로필 편집·재접속과 닉네임/캐릭터 순위 �
   await page.goto("/"); await page.getByRole("complementary", { name: "나의 도구" }).getByRole("button", { name: "주간 랭킹", exact: true }).click();
   const dialog = page.getByRole("dialog"); await expect(dialog.getByRole("list", { name: "이번 주 순위" })).toContainText("별빛 공부왕");
   await expect(dialog.locator(".ranking-avatar .player-avatar")).toBeVisible(); await expect(dialog).not.toContainText("learner@example.test");
-  await dialog.getByRole("button", { name: "나의 책상", exact: true }).click(); await expect(dialog.locator(".desk-placed-item")).toHaveCount(0); await expect(dialog.locator(".desk-room-art")).toHaveCSS("background-image", /empty-campus-desk-v1/);
+  await dialog.getByRole("button", { name: "나의 책상", exact: true }).click(); await expect(dialog.locator(".desk-placed-item")).toHaveCount(0); await expect(dialog.locator(".desk-room-art")).toHaveAttribute("src", /empty-campus-desk-v1/);
+  await expect.poll(()=>dialog.locator(".desk-room-art").evaluate(el=>(el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
   await page.screenshot({ path: test.info().outputPath("empty-desk.png") });
+});
+
+for (const viewport of [{width:320,height:568},{width:844,height:390}]) test(`${viewport.width} 결과 화면도 스크롤 없이 모든 버튼 접근·복습 페이지`, async({page})=>{
+  test.setTimeout(90_000);await page.setViewportSize(viewport);await page.goto("/");await page.clock.install({time:new Date(0)});await page.clock.pauseAt(new Date(1000));
+  async function open(name:string,start:string){const launch=page.getByRole("navigation",{name:"미니게임"}).getByRole("button",{name,exact:true});await launch.scrollIntoViewIfNeeded();await launch.click();await page.getByRole("button",{name:start,exact:true}).click();}
+  await open("메모리 카드","플래시카드 시작");
+  for(let i=0;i<6;i++){await page.getByRole("button",{name:"정답 뒤집기",exact:true}).click();await page.getByRole("button",{name:"기억했어요",exact:true}).click();}
+  await expect(page.getByRole("heading",{name:"오늘의 복습 완료"})).toBeVisible();await fits(page);await page.getByRole("button",{name:"다음 →",exact:true}).click();await expect(page.getByRole("navigation",{name:"복습 결과 페이지"})).toContainText("2/2");await page.keyboard.press("Escape");
+  await open("옐로캡 러시","출발하기");
+  for(let i=0;i<3;i++){
+    const word=await page.getByLabel("택시 게임 조작 영역",{exact:true}).locator("p.text-3xl").textContent();const item=VOCAB.find(v=>v.word===word)!;
+    const lanes=page.locator(".cab-road-lane");const texts=await lanes.allTextContents();const wrong=texts.findIndex(text=>!text.includes(item.synonym));await lanes.nth(wrong).click();await page.clock.fastForward(cabDuration(0,i,false)+40);await page.clock.fastForward(1000);
+  }
+  await expect(page.getByRole("heading",{name:"운행 종료"})).toBeVisible();await fits(page);await page.screenshot({path:test.info().outputPath(`cab-result-${viewport.width}.png`)});await page.keyboard.press("Escape");
+  await open("갈림길","절벽 달리기 시작");await page.clock.fastForward(3900);await page.clock.fastForward(850);await expect(page.getByRole("heading",{name:"다음 갈림길은 더 멀리"})).toBeVisible();await fits(page);await page.keyboard.press("Escape");
+  await page.evaluate(key=>localStorage.setItem(key,JSON.stringify([1,2,3].map(n=>({stage:1,difficulty:0,elapsedMs:1000*n,score:1200,at:n})))),POP_RECORD_KEY);
+  await open("워드 팝","워드 팝 시작");
+  for(let move=0;move<30 && await page.locator(".word-pop").getAttribute("data-phase")==="play";move++){
+    const tiles=page.locator(".pop-tile");const pair=popLegalMove(await tiles.evaluateAll(elements=>elements.map(el=>({kind:Number(el.getAttribute("data-kind"))}))))!;await tiles.nth(pair[0]).click();await tiles.nth(pair[1]).click();
+    for(let n=0;n<18;n++){await page.clock.runFor(450);if(["play","stage","over"].includes((await page.locator(".word-pop").getAttribute("data-phase"))!))break;}
+  }
+  await expect(page.getByRole("heading",{name:"스테이지 1 클리어!"})).toBeVisible();await fits(page);await page.screenshot({path:test.info().outputPath(`pop-result-${viewport.width}.png`)});
 });

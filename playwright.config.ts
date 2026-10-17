@@ -20,7 +20,8 @@ export default defineConfig({
   webServer: [
     { command: "node tests/mock-service.mjs", url: "http://localhost:3101", reuseExistingServer: false },
     {
-      command: "npm run dev", url: "http://localhost:3000", reuseExistingServer: false,
+      // 캐시가 없을 때 4,000단어 번들·기존 폰트의 첫 컴파일 시간을 허용합니다.
+      command: "npm run dev", url: "http://localhost:3000", reuseExistingServer: false, timeout: 180_000,
       env: {
         NEXT_PUBLIC_API_BASE_URL: "http://localhost:3101",
         NEXT_PUBLIC_SUPABASE_URL: "http://localhost:3101",

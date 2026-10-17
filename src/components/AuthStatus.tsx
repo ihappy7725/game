@@ -57,7 +57,7 @@ export function AuthStatus() {
   return (
     <div className="flex items-center gap-2">
       <Link href="/profile" aria-label="프로필 설정"
-        className="flex max-w-[6rem] items-center gap-1.5 text-xs text-white/50 lg:max-w-[11rem]"
+        className="auth-profile-link flex max-w-[6rem] items-center gap-1.5 text-xs text-white/50 lg:max-w-[11rem]"
         title="닉네임과 캐릭터 설정"
       >
         <PlayerAvatar id={state.avatarId}/>

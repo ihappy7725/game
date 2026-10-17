@@ -39,7 +39,7 @@
 .game-fullscreen .pop-tile strong {
   position:relative; z-index:3; display:block; width:100%; padding:0;
   /* 글자 수에 맞춰 줄여 긴 단어도 큐브 밖으로 넘치지 않습니다. */
-  font-size:clamp(7px,min(3cqi,calc(30cqi / var(--pop-len,8))),18px);
+  font-size:clamp(7px,min(2.6cqi,calc(19cqi / var(--pop-len,8))),18px);
   line-height:1.08; overflow-wrap:anywhere; hyphens:auto;
 }
 .game-fullscreen .pop-tile i { z-index:4; top:-4%; right:2%; font-size:clamp(11px,3.6cqi,24px); color:#7b43ab; text-shadow:0 0 6px #ffffff; }

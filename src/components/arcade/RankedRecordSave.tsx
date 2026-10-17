@@ -26,9 +26,9 @@ export function RankedRecordSave({ attempt, game, difficulty, stage = 0, score, 
     }
   }
   return <section className="ranked-save" aria-label="주간 게임 기록 저장">
-    <p>게임별 주간 연습 순위 · 코인 보상과 별도로 집계합니다.</p>
-    {allowed ? <button disabled={status === "saving" || status === "saved"} onClick={() => void save()}>{status === "saving" ? "게임 기록 저장 중…" : status === "saved" ? "게임 기록 저장 완료" : status === "error" ? "같은 게임 기록 다시 저장" : "주간 게임 기록 저장"}</button> : <small>{attempt?.userId ? "시작한 계정으로 로그인해야 이 판을 저장할 수 있어요." : "로그인한 뒤 새로 시작한 판부터 주간 순위에 저장할 수 있어요."}</small>}
+    <p>주간 게임 순위 · 연습 기록</p>
+    {allowed ? <button disabled={status === "saving" || status === "saved"} onClick={() => void save()}>{status === "saving" ? "게임 기록 저장 중…" : status === "saved" ? "게임 기록 저장 완료" : status === "error" ? "같은 게임 기록 다시 저장" : "주간 게임 기록 저장"}</button> : <small>{attempt?.userId ? "시작한 계정으로 로그인해야 이 판을 저장할 수 있어요." : "로그인 후 시작한 판부터 순위에 저장할 수 있어요."}</small>}
     {message ? <p role="status">{message}</p> : null}
-    <small>클라이언트 제출 기록이며 서버 재생 검증 전입니다. 메모리 자가 복습은 경쟁 순위에서 제외합니다.</small>
+    <small>코인과 별도 · 메모리 복습 제외</small>
   </section>;
 }

@@ -27,6 +27,10 @@ test("직접 작성 어휘·예문과 오염된 저장 값·해제 조건·모�
   expect(cabDuration(2, 999, true)).toBeGreaterThanOrEqual(850); expect(memoryDuration(2, 999)).toBe(3500);
   const options = wordChoices({ ...VOCAB[0], synonym: "많은", decoys: ["작은", "느린"] }, 3);
   expect(new Set(options.choices).size).toBe(3); expect(options.choices.every(word => /^[a-z][a-z '-]*$/i.test(word))).toBe(true); expect(options.choices[options.correct]).toBe(VOCAB[0].word);
+  const random = Math.random;
+  try { Math.random = () => 0; const fixed = wordChoices(VOCAB[0], 3); expect(new Set(fixed.choices).size).toBe(3); expect(fixed.choices[fixed.correct]).toBe(VOCAB[0].word); }
+  finally { Math.random = random; }
+
 });
 
 test("100단어 블록·예문·플래시카드·중복 없는 학습량·재접속 저장·중앙 고정 창", async ({ page }) => {
@@ -44,6 +48,7 @@ test("100단어 블록·예문·플래시카드·중복 없는 학습량·재접
 });
 
 test("게임별 초급만 시작·메모리 클리어로 중급/고급 해제·게임 정답 학습량 연동", async ({ page }) => {
+  test.setTimeout(90_000);
   await page.goto("/"); await enter(page, "메모리 카드"); await rememberCards(page, 6); await page.keyboard.press("Escape");
   await expect(page.getByRole("progressbar", { name: "전체 단어 학습량", exact: true })).toHaveAttribute("value", "6");
   await page.getByRole("navigation", { name: "미니게임" }).getByRole("button", { name: "갈림길", exact: true }).click(); await expect(page.getByRole("button", { name: "중급 시작" })).toBeDisabled(); await page.keyboard.press("Escape");

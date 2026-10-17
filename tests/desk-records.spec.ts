@@ -26,6 +26,7 @@ test("밝은 책상 실제 드래그·방향키·경계 제한·명시적 저장
 });
 
 test("320px 실제 터치 드래그·중복 보관 안내와 뽑기 결과", async ({ page }) => {
+  test.setTimeout(90_000);
   const owned = { ...item }; await page.route("**/api/game/inventory", route => route.fulfill({ json: { items: [owned] } }));
   await page.route("**/api/game/state", async route => { const data = await (await route.fetch()).json(); return route.fulfill({ json: { ...data, coin_balance: 900 } }); });
   let draws = 0; await page.route("**/api/game/gacha?**", route => { draws++; owned.quantity = 4; return route.fulfill({ json: { items: [{ id: owned.item_id, name: owned.name, emoji: owned.emoji, rarity: owned.rarity, quantity: 4 }], cost: 300, coin_balance: 600 } }); });
@@ -66,6 +67,7 @@ test("갈림길 종료 후 기록 저장은 별도 버튼·동일 판 중복 차
 });
 
 test("워드 팝 시간 저장 실패 재시도는 동일 판·잘못된 오답 응답도 예제 진입", async ({ page }) => {
+  test.setTimeout(90_000);
   const attempts: Record<string, unknown>[] = [];
   await page.route("**/api/game/records", route => { attempts.push(route.request().postDataJSON()); return attempts.length === 1 ? route.abort() : route.fulfill({ json: { saved: true, created: false, verification: "client_reported" } }); });
   await page.route("**/api/game/mistakes?**", route => route.fulfill({ json: { status: "잘못된 모의 응답" } }));

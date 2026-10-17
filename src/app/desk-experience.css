@@ -49,5 +49,5 @@
 
 /* 비어 있는 입체 캠퍼스 책상. 보유·배치한 아이템만 별도 레이어에 나타납니다. */
 .desk-scene { aspect-ratio:16/9; height:auto; background:#cfa875; }
-.desk-room-art { position:absolute; inset:0; background:url(/backgrounds/empty-campus-desk-v1.webp) center/100% 100%; }
+.desk-room-art { object-fit:fill; pointer-events:none; }
 .desk-scene .desk-placement-area { top:52%; bottom:16%; left:12%; right:12%; }

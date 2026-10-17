@@ -13,7 +13,7 @@ export function ProfileFields({ nickname, avatar, onNickname, onAvatar }: {
 }) {
   return <div className="profile-fields"><label>공개 닉네임<input value={nickname} onChange={e => onNickname(e.target.value)} required minLength={2} maxLength={20} autoComplete="nickname" placeholder="캠퍼스에서 사용할 이름"/></label>
     <small>2~20자 · 한글, 영문, 숫자, 공백, 밑줄, 하이픈. 이메일은 사용할 수 없어요. 같은 닉네임을 쓸 수 있습니다.</small>
-    <fieldset><legend>나의 캠퍼스 캐릭터</legend><div className="avatar-options">{AVATARS.map((name, index) => <button type="button" key={name} aria-label={`캐릭터 ${index + 1}: ${name}`} aria-pressed={avatar === avatarId(index)} onClick={() => onAvatar(avatarId(index))}><PlayerAvatar id={avatarId(index)} label={name}/><span>{name}</span></button>)}</div></fieldset></div>;
+    <fieldset><legend>나의 캠퍼스 캐릭터</legend><div className="avatar-options">{AVATARS.map((name, index) => <button type="button" key={name} aria-label={`캐릭터 ${index + 1}: ${name}`} aria-pressed={avatar === avatarId(index)} onClick={() => onAvatar(avatarId(index))}><PlayerAvatar id={avatarId(index)} label={name}/></button>)}</div></fieldset></div>;
 }
 export function ProfileEditor({ initialNickname, initialAvatar }: { initialNickname: string; initialAvatar: string }) {
   const [nickname, setNickname] = useState(initialNickname);

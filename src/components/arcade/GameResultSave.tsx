@@ -56,12 +56,12 @@ export function GameResultSave({ userId, score, correctCount, answers, onBusy }:
   if (!userId) return <p className="mt-4 text-xs text-white/65">비로그인 연습 판은 저장하지 않습니다. <Link href="/login" className="underline">로그인</Link> 후 새 판을 시작해 주세요.</p>;
   if (!ownerMatches) return <p className="mt-4 text-xs text-white/65">로그인 계정이 바뀌어 이 판은 저장할 수 없습니다. 새 판을 시작해 주세요.</p>;
   return (
-    <div className="mt-5 space-y-3">
+    <div className="game-reward-save mt-5 space-y-3">
       <button type="button" disabled={status !== "idle"} onClick={() => void save()}
         className="rounded-xl border border-white/30 px-4 py-2 text-sm disabled:opacity-50">
         {status === "saving" ? "보상·오답 저장 중..." : status === "done" ? "저장 요청 종료" : "보상·오답 저장"}
       </button>
-      <p role="status" className="text-xs leading-relaxed text-white/70">{message || "저장하면 서버에서 보상을 계산하고 오답을 기록합니다. 최종 점수·최고 콤보 자체는 별도 저장되지 않습니다."}</p>
+      <p role="status" className="text-xs leading-relaxed text-white/70">{message || "학습 보상과 오답을 저장합니다. 게임 순위는 위 버튼으로 따로 저장하세요."}</p>
     </div>
   );
 }
