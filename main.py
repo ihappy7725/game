@@ -16,9 +16,10 @@ gamification_api.py.parked 에 테이블·함수 이름이 다른 별개 구현�
 골라 쓰세요. 비교는 GAMIFICATION_BACKEND.md 를 보세요.
 """
 
-import hashlib
+from public_profiles import rank_identity
 import json
 import logging
+from public_profiles import rank_identity
 import os
 import random
 from datetime import date, datetime, timedelta, timezone
@@ -1115,6 +1116,7 @@ class PlaceItemRequest(BaseModel):
 
 
 class LeaderboardRow(BaseModel):
+    avatar_id: str = "campus-01"
     rank: int
     display_name: str
     earned_this_week: int
@@ -1122,6 +1124,7 @@ class LeaderboardRow(BaseModel):
 
 
 class LeaderboardResponse(BaseModel):
+    profiles_ready: bool = False
     rows: List[LeaderboardRow]
     my_rank: Optional[int] = None
 
@@ -1389,7 +1392,7 @@ async def get_leaderboard(
     try:
         response = (
             client.table("game_weekly_leaderboard")
-            .select("user_id, display_name, earned_this_week")
+            .select("*")
             .order("earned_this_week", desc=True)
             .limit(limit)
             .execute()
@@ -1407,12 +1410,13 @@ async def get_leaderboard(
         rows.append(
             LeaderboardRow(
                 rank=index,
-                display_name=str(row.get("display_name") or "익명 유학생"),
+                # 구형 뷰의 이메일 앞부분은 공개 응답에 내보내지 않습니다.
+                **rank_identity(row),
                 earned_this_week=int(row.get("earned_this_week") or 0),
                 is_me=is_me,
             )
         )
-    return LeaderboardResponse(rows=rows, my_rank=my_rank)
+    return LeaderboardResponse(rows=rows, my_rank=my_rank, profiles_ready=all("avatar_id" in row for row in (getattr(response, "data", None) or [])))
 
 
 @app.get("/api/game/mistakes", response_model=MistakesResponse)

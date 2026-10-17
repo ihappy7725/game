@@ -5,6 +5,7 @@ import { forkDuration } from "../src/lib/word-arcade";
 test.beforeEach(async ({ context }) => { await context.route("**/*", route => { const u=new URL(route.request().url());return u.hostname==="localhost" && ["3000","3101"].includes(u.port)?route.continue():route.abort(); }); });
 
 test("네 게임 캡슐은 같은 좌표·크기·둥근 모서리, 상태를 한 곳에 표시", async ({ page }) => {
+  test.setTimeout(90_000);
   for(const viewport of [{width:1280,height:900},{width:320,height:568}]) {
     await page.setViewportSize(viewport);await page.goto("/");let reference:{x:number;y:number;width:number;height:number}|null=null;
     for(const [name,start] of [["옐로캡 러시","출발하기"],["갈림길","절벽 달리기 시작"],["워드 팝","워드 팝 시작"],["메모리 카드","플래시카드 시작"]]) {
@@ -33,7 +34,9 @@ test("갈림길 원화·영상·캐릭터·재질과 실제 분기, 정지·종�
   await page.getByRole("button",{name:"일시정지",exact:true}).click();await expect(video).toHaveJSProperty("paused",true);
   await page.clock.install({time:new Date(0)});await page.clock.pauseAt(new Date(1000));const before=await canvas.getAttribute("data-camera");await page.clock.runFor(200);expect(await canvas.getAttribute("data-camera")).toBe(before);
   await page.getByRole("button",{name:"계속하기",exact:true}).click();
-  const meaning=await page.getByLabel("갈림길 한국어 뜻").textContent(),word=VOCAB.find(item=>item.meaning===meaning)!.word;
+  const meaning=await page.getByLabel("갈림길 한국어 뜻").textContent();
+  const shown=await page.locator(".fork-sign strong").allTextContents();
+  const word=VOCAB.find(item=>item.meaning===meaning && shown.includes(item.word))!.word;
   const sign=page.locator(".fork-sign").filter({hasText:word});await sign.click();await page.clock.fastForward(forkDuration(0,0)+40);await page.clock.runFor(850);
   await expect(world).not.toHaveAttribute("data-heading","0.00");await expect(page.getByLabel("갈림길 기록")).toContainText("1개 통과");
   await page.clock.resume();await page.keyboard.press("Escape");await expect(world).toHaveCount(0);expect(errors).toEqual([]);

@@ -18,7 +18,8 @@ async function open(page: Page, name: string) {
 }
 async function choose(game: Locator, kind: "갈림길" | "서브웨이", correct = true) {
   const meaning = await game.getByLabel(`${kind} 한국어 뜻`).textContent();
-  const item = VOCAB.find(item => item.meaning === meaning);
+  const shown = await game.locator(kind === "갈림길" ? ".fork-sign strong" : ".word-platform strong").allTextContents();
+  const item = VOCAB.find(item => item.meaning === meaning && shown.includes(item.word));
   if (!item) throw new Error("문항을 찾지 못했습니다.");
   const buttons = game.locator(kind === "갈림길" ? ".fork-sign" : ".word-platform");
   for (const button of await buttons.all()) {

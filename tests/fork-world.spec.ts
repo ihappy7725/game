@@ -26,7 +26,9 @@ test("실제 선택 방향으로 월드·카메라 이동 · 연속 정답 · �
   expect(Number(await canvas.getAttribute("data-triangles"))).toBeGreaterThan(1000);
   let origin = FORK_START;
   for (let n = 0; n < 4; n++) {
-    const meaning = await page.getByLabel("갈림길 한국어 뜻").textContent(), item = VOCAB.find(word => word.meaning === meaning)!;
+    const meaning = await page.getByLabel("갈림길 한국어 뜻").textContent();
+    const shown = await page.locator(".fork-sign strong").allTextContents();
+    const item = VOCAB.find(word => word.meaning === meaning && shown.includes(word.word))!;
     const sign = page.locator(".fork-sign").filter({ hasText: item.word }); const choice = (await sign.getAttribute("class"))!.includes("fork-0") ? 0 : 1;
     await sign.click(); await page.clock.fastForward(forkDuration(0, n) + 30); const before = await canvas.getAttribute("data-camera");
     await page.clock.runFor(400); expect(await canvas.getAttribute("data-camera")).not.toBe(before);

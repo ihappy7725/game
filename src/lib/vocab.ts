@@ -36,7 +36,8 @@ export function shuffledDeck(reserve = 10): VocabItem[] {
   if (typeof window === "undefined") return deck;
   let recent: string[] = [];
   try { const raw = JSON.parse(sessionStorage.getItem("toefl-recent-vocab-v1") ?? "[]"); if (Array.isArray(raw)) recent = raw.filter(v => typeof v === "string").slice(-60); } catch { /* 저장이 막혀도 무작위 출제합니다. */ }
-  const ordered = [...deck.filter(item => !recent.includes(item.word)), ...deck.filter(item => recent.includes(item.word))];
+  const held = new Set(recent);
+  const ordered = [...deck.filter(item => !held.has(item.word)), ...deck.filter(item => held.has(item.word))];
   try { sessionStorage.setItem("toefl-recent-vocab-v1", JSON.stringify([...recent, ...ordered.slice(0, reserve).map(item => item.word)].slice(-60))); } catch { /* 현재 판은 정상 진행합니다. */ }
   return ordered;
 }

@@ -27,6 +27,9 @@ import { useAuth } from "@/lib/useAuth";
  * Providers > Email 에서 "Confirm email" 을 끄세요.
  * ------------------------------------------------------------------------- */
 
+import { ProfileFields } from "@/components/PlayerProfile";
+import { validNickname } from "@/lib/player-profile";
+
 type Mode = "signin" | "signup";
 
 export default function LoginPage() {
@@ -35,6 +38,8 @@ export default function LoginPage() {
 
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [avatar, setAvatar] = useState("campus-01");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -51,6 +56,7 @@ export default function LoginPage() {
     state.status !== "loading" &&
     email.trim().length > 0 &&
     password.length >= 6 &&
+    (mode === "signin" || validNickname(nickname)) &&
     !isLoading;
 
   async function handleSubmit(event: React.FormEvent) {
@@ -67,6 +73,7 @@ export default function LoginPage() {
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: email.trim(),
           password,
+          options: { data: { nickname: nickname.trim(), avatar_id: avatar } },
         });
         if (signUpError) throw signUpError;
 
@@ -160,6 +167,8 @@ export default function LoginPage() {
               className="glass-soft w-full rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 outline-none"
             />
           </div>
+
+          {mode === "signup" ? <ProfileFields nickname={nickname} avatar={avatar} onNickname={setNickname} onAvatar={setAvatar}/> : null}
 
           <motion.button
             type="submit"

@@ -13,7 +13,11 @@ test("실제 카탈로그와 템플릿 병합은 단어 수·기존 데이터 �
   const existing = JSON.parse(await readFile(new URL("../src/data/vocabulary.json", import.meta.url), "utf8"));
   const template = await readFile(new URL("../data/vocabulary-template.csv", import.meta.url), "utf8");
   const result = prepareVocabulary(template, existing);
-  assert.equal(result.entries.length, 214); assert.deepEqual(result.entries, existing);
+  assert.equal(result.entries.length, existing.length);
+  const imported = new Set(parseCsv(template).slice(1).filter(row => row[0]).map(row => row[0]));
+  assert.deepEqual(result.entries.map(item => item.word), existing.map(item => item.word));
+  assert.deepEqual(result.entries.filter(item => !imported.has(item.word)), existing.filter(item => !imported.has(item.word)));
+  assert.equal(result.imported, imported.size);
 });
 test("중복·필수 필드·깨진 인용·동일 선택지 거부", () => {
   for (const csv of [

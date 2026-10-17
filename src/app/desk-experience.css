@@ -46,3 +46,8 @@
   .ranking-categories button,.game-rankings>nav button { padding:8px 12px; font-size:10px; }.game-ranking-results li { gap:8px; font-size:11px; padding:12px; }.gacha-capsule { scale:.85; margin:0 auto 16px; }.ranked-save { padding:12px; }.ranked-save p { font-size:11px; }
 }
 @media(prefers-reduced-motion:reduce) { .capsule-opening,.gacha-panel li { animation:none!important; } }
+
+/* 비어 있는 입체 캠퍼스 책상. 보유·배치한 아이템만 별도 레이어에 나타납니다. */
+.desk-scene { aspect-ratio:16/9; height:auto; background:#cfa875; }
+.desk-room-art { position:absolute; inset:0; background:url(/backgrounds/empty-campus-desk-v1.webp) center/100% 100%; }
+.desk-scene .desk-placement-area { top:52%; bottom:16%; left:12%; right:12%; }

@@ -69,8 +69,8 @@ export function DormRoom({ userId, revision }: { userId: string; revision: numbe
       <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-lg font-semibold">나의 책상</h3><button type="button" onClick={inventory.reload} disabled={saving || inventory.loading} className={actionClass}>보유 아이템 새로고침</button></div>
       <p className="desk-instructions">보유 아이템을 하나씩 선택해 놓고, 직접 끌거나 방향키로 움직인 뒤 <b>배치 저장</b>을 눌러주세요. 같은 종류는 하나씩 배치하며 중복 수량은 보관합니다.</p>
       <div aria-label="책상 배치 미리보기" className="desk-scene">
-        <div className="desk-window" aria-hidden="true"><i/><i/></div><div className="desk-wall-light" aria-hidden="true"/><div className="desk-surface" aria-hidden="true"/><div className="desk-front" aria-hidden="true"/>
-        <span className="desk-scene-title">나의 작은 캠퍼스</span>
+        <div className="desk-room-art" aria-hidden="true"/>
+
         <div className="desk-placement-area" ref={area} aria-label="책상 배치 영역">
           {inventory.data?.items.map((item) => {
             const preview = selection?.id === item.item_id ? selection : null;

@@ -11,7 +11,7 @@ export type AuthState =
   /** .env.local 이 아직 비어 있어 로그인 자체가 불가능 */
   | { status: "unconfigured" }
   | { status: "signed-out" }
-  | { status: "signed-in"; email: string | null; userId: string };
+  | { status: "signed-in"; email: string | null; userId: string; nickname?: string; avatarId?: string };
 
 /** 브라우저에서 본 로그인 상태와 access token 접근자.
  *
@@ -38,7 +38,7 @@ export function useAuth() {
       const user = data.session?.user;
       setState(
         user
-          ? { status: "signed-in", email: user.email ?? null, userId: user.id }
+          ? { status: "signed-in", email: user.email ?? null, userId: user.id, nickname: user.user_metadata?.nickname, avatarId: user.user_metadata?.avatar_id }
           : { status: "signed-out" },
       );
     });
@@ -49,7 +49,7 @@ export function useAuth() {
         const user = session?.user;
         setState(
           user
-            ? { status: "signed-in", email: user.email ?? null, userId: user.id }
+            ? { status: "signed-in", email: user.email ?? null, userId: user.id, nickname: user.user_metadata?.nickname, avatarId: user.user_metadata?.avatar_id }
             : { status: "signed-out" },
         );
 

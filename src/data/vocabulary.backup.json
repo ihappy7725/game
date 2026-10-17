@@ -1,0 +1,2142 @@
+[
+  {
+    "word": "abundant",
+    "synonym": "plentiful",
+    "decoys": [
+      "scarce",
+      "hostile"
+    ],
+    "meaning": "풍부한",
+    "example": "Rainfall is abundant in this tropical region."
+  },
+  {
+    "word": "arbitrary",
+    "synonym": "random",
+    "decoys": [
+      "deliberate",
+      "precise"
+    ],
+    "meaning": "임의적인",
+    "example": "The committee rejected the arbitrary deadline."
+  },
+  {
+    "word": "coherent",
+    "synonym": "logical",
+    "decoys": [
+      "chaotic",
+      "hollow"
+    ],
+    "meaning": "일관성 있는",
+    "example": "Her essay presents a coherent argument."
+  },
+  {
+    "word": "deteriorate",
+    "synonym": "worsen",
+    "decoys": [
+      "flourish",
+      "assemble"
+    ],
+    "meaning": "악화되다",
+    "example": "Air quality may deteriorate as traffic increases."
+  },
+  {
+    "word": "diminish",
+    "synonym": "decrease",
+    "decoys": [
+      "amplify",
+      "sustain"
+    ],
+    "meaning": "줄어들다",
+    "example": "Regular practice can diminish anxiety."
+  },
+  {
+    "word": "elaborate",
+    "synonym": "detailed",
+    "decoys": [
+      "brief",
+      "vacant"
+    ],
+    "meaning": "정교한",
+    "example": "The museum displays an elaborate wooden model."
+  },
+  {
+    "word": "feasible",
+    "synonym": "achievable",
+    "decoys": [
+      "impossible",
+      "reckless"
+    ],
+    "meaning": "실현 가능한",
+    "example": "The team proposed a feasible solution."
+  },
+  {
+    "word": "hostile",
+    "synonym": "unfriendly",
+    "decoys": [
+      "gracious",
+      "fertile"
+    ],
+    "meaning": "적대적인",
+    "example": "The animals survived in a hostile environment."
+  },
+  {
+    "word": "inevitable",
+    "synonym": "unavoidable",
+    "decoys": [
+      "optional",
+      "gradual"
+    ],
+    "meaning": "불가피한",
+    "example": "Some changes are inevitable as a city grows."
+  },
+  {
+    "word": "intricate",
+    "synonym": "complex",
+    "decoys": [
+      "simple",
+      "barren"
+    ],
+    "meaning": "복잡한",
+    "example": "The scientist described an intricate network of cells."
+  },
+  {
+    "word": "lucrative",
+    "synonym": "profitable",
+    "decoys": [
+      "worthless",
+      "tedious"
+    ],
+    "meaning": "수익성 있는",
+    "example": "Tourism became a lucrative local industry."
+  },
+  {
+    "word": "meticulous",
+    "synonym": "careful",
+    "decoys": [
+      "careless",
+      "abrupt"
+    ],
+    "meaning": "꼼꼼한",
+    "example": "The researcher kept meticulous notes."
+  },
+  {
+    "word": "mitigate",
+    "synonym": "alleviate",
+    "decoys": [
+      "aggravate",
+      "provoke"
+    ],
+    "meaning": "완화하다",
+    "example": "Trees can mitigate the effects of extreme heat."
+  },
+  {
+    "word": "notion",
+    "synonym": "concept",
+    "decoys": [
+      "evidence",
+      "barrier"
+    ],
+    "meaning": "개념",
+    "example": "The discovery challenged the notion that the lake was empty."
+  },
+  {
+    "word": "obsolete",
+    "synonym": "outdated",
+    "decoys": [
+      "modern",
+      "durable"
+    ],
+    "meaning": "구식의",
+    "example": "New technology made the old equipment obsolete."
+  },
+  {
+    "word": "plausible",
+    "synonym": "believable",
+    "decoys": [
+      "absurd",
+      "rigid"
+    ],
+    "meaning": "그럴듯한",
+    "example": "She offered a plausible explanation for the delay."
+  },
+  {
+    "word": "prominent",
+    "synonym": "notable",
+    "decoys": [
+      "obscure",
+      "trivial"
+    ],
+    "meaning": "두드러진",
+    "example": "A prominent feature of the campus is its clock tower."
+  },
+  {
+    "word": "refute",
+    "synonym": "disprove",
+    "decoys": [
+      "confirm",
+      "endorse"
+    ],
+    "meaning": "반박하다",
+    "example": "The new evidence may refute the original claim."
+  },
+  {
+    "word": "scarce",
+    "synonym": "rare",
+    "decoys": [
+      "abundant",
+      "dense"
+    ],
+    "meaning": "부족한",
+    "example": "Fresh water is scarce in the desert."
+  },
+  {
+    "word": "subtle",
+    "synonym": "understated",
+    "decoys": [
+      "obvious",
+      "harsh"
+    ],
+    "meaning": "미묘한",
+    "example": "The study detected a subtle change in temperature."
+  },
+  {
+    "word": "tedious",
+    "synonym": "boring",
+    "decoys": [
+      "thrilling",
+      "concise"
+    ],
+    "meaning": "지루한",
+    "example": "The computer handles the most tedious calculations."
+  },
+  {
+    "word": "vulnerable",
+    "synonym": "susceptible",
+    "decoys": [
+      "immune",
+      "sturdy"
+    ],
+    "meaning": "취약한",
+    "example": "Young plants are vulnerable to frost."
+  },
+  {
+    "word": "ambiguous",
+    "synonym": "unclear",
+    "decoys": [
+      "definite",
+      "candid"
+    ],
+    "meaning": "모호한",
+    "example": "The ambiguous instruction confused several students."
+  },
+  {
+    "word": "compile",
+    "synonym": "gather",
+    "decoys": [
+      "scatter",
+      "discard"
+    ],
+    "meaning": "모아 엮다",
+    "example": "We will compile the results in a single report."
+  },
+  {
+    "word": "constrain",
+    "synonym": "restrict",
+    "decoys": [
+      "liberate",
+      "expand"
+    ],
+    "meaning": "제한하다",
+    "example": "Limited funding can constrain scientific research."
+  },
+  {
+    "word": "derive",
+    "synonym": "obtain",
+    "decoys": [
+      "donate",
+      "forfeit"
+    ],
+    "meaning": "끌어내다",
+    "example": "Many medicines derive their ingredients from plants."
+  },
+  {
+    "word": "endure",
+    "synonym": "withstand",
+    "decoys": [
+      "surrender",
+      "vanish"
+    ],
+    "meaning": "견디다",
+    "example": "The bridge can endure strong winds."
+  },
+  {
+    "word": "exploit",
+    "synonym": "utilize",
+    "decoys": [
+      "neglect",
+      "conceal"
+    ],
+    "meaning": "활용하다",
+    "example": "Solar panels exploit the energy of sunlight."
+  },
+  {
+    "word": "imperative",
+    "synonym": "essential",
+    "decoys": [
+      "optional",
+      "lenient"
+    ],
+    "meaning": "필수적인",
+    "example": "It is imperative to protect the remaining wetlands."
+  },
+  {
+    "word": "sustain",
+    "synonym": "maintain",
+    "decoys": [
+      "abandon",
+      "disrupt"
+    ],
+    "meaning": "유지하다",
+    "example": "A healthy ecosystem can sustain many species."
+  },
+  {
+    "word": "adapt",
+    "meaning": "적응하다",
+    "synonym": "adjust",
+    "example": "Birds adapt to changes in their environment.",
+    "decoys": [
+      "dispute",
+      "recognize"
+    ]
+  },
+  {
+    "word": "adequate",
+    "meaning": "충분한",
+    "synonym": "sufficient",
+    "example": "The laboratory has adequate space for the new equipment.",
+    "decoys": [
+      "traditional",
+      "demonstrate"
+    ]
+  },
+  {
+    "word": "adjacent",
+    "meaning": "인접한",
+    "synonym": "neighboring",
+    "example": "The library is adjacent to the science building.",
+    "decoys": [
+      "transform",
+      "huge"
+    ]
+  },
+  {
+    "word": "advocate",
+    "meaning": "옹호하다",
+    "synonym": "support",
+    "example": "Many researchers advocate greater access to public data.",
+    "decoys": [
+      "vital",
+      "effect"
+    ]
+  },
+  {
+    "word": "aesthetic",
+    "meaning": "미적인",
+    "synonym": "artistic",
+    "example": "The architect considered the aesthetic value of the courtyard.",
+    "decoys": [
+      "accumulating",
+      "put into practice"
+    ]
+  },
+  {
+    "word": "allocate",
+    "meaning": "할당하다",
+    "synonym": "assign",
+    "example": "The school will allocate more funds to language programs.",
+    "decoys": [
+      "discussion",
+      "suggest"
+    ]
+  },
+  {
+    "word": "alter",
+    "meaning": "바꾸다",
+    "synonym": "modify",
+    "example": "A small change in temperature can alter the reaction.",
+    "decoys": [
+      "ten years",
+      "motivation"
+    ]
+  },
+  {
+    "word": "alternative",
+    "meaning": "대안",
+    "synonym": "option",
+    "example": "Cycling offers an alternative to driving on campus.",
+    "decoys": [
+      "decrease",
+      "include"
+    ]
+  },
+  {
+    "word": "analyze",
+    "meaning": "분석하다",
+    "synonym": "examine",
+    "example": "Students analyze the results before writing their reports.",
+    "decoys": [
+      "infer",
+      "point to"
+    ]
+  },
+  {
+    "word": "ancestor",
+    "meaning": "조상",
+    "synonym": "forebear",
+    "example": "Scientists studied the fossil of an early human ancestor.",
+    "decoys": [
+      "describe precisely",
+      "native"
+    ]
+  },
+  {
+    "word": "anticipate",
+    "meaning": "예상하다",
+    "synonym": "expect",
+    "example": "The planners anticipate an increase in bicycle traffic.",
+    "decoys": [
+      "show",
+      "conclude"
+    ]
+  },
+  {
+    "word": "apparent",
+    "meaning": "명백한",
+    "synonym": "evident",
+    "example": "The benefits became apparent after the second experiment.",
+    "decoys": [
+      "signify",
+      "restrain"
+    ]
+  },
+  {
+    "word": "approach",
+    "meaning": "접근법",
+    "synonym": "method",
+    "example": "The teacher introduced a new approach to learning vocabulary.",
+    "decoys": [
+      "compact",
+      "first"
+    ]
+  },
+  {
+    "word": "appropriate",
+    "meaning": "적절한",
+    "synonym": "suitable",
+    "example": "Choose an appropriate method for measuring the temperature.",
+    "decoys": [
+      "portray",
+      "new development"
+    ]
+  },
+  {
+    "word": "approximate",
+    "meaning": "대략적인",
+    "synonym": "rough",
+    "example": "The map shows the approximate location of the ancient town.",
+    "decoys": [
+      "deny",
+      "understanding"
+    ]
+  },
+  {
+    "word": "assess",
+    "meaning": "평가하다",
+    "synonym": "evaluate",
+    "example": "The team will assess the environmental impact of the dam.",
+    "decoys": [
+      "discover",
+      "examine closely"
+    ]
+  },
+  {
+    "word": "assign",
+    "meaning": "배정하다",
+    "synonym": "designate",
+    "example": "The professor will assign a topic to each group.",
+    "decoys": [
+      "diverge",
+      "example"
+    ]
+  },
+  {
+    "word": "assume",
+    "meaning": "가정하다",
+    "synonym": "suppose",
+    "example": "We should not assume that every species behaves alike.",
+    "decoys": [
+      "separate",
+      "combine"
+    ]
+  },
+  {
+    "word": "attain",
+    "meaning": "달성하다",
+    "synonym": "achieve",
+    "example": "The project helped the city attain its recycling target.",
+    "decoys": [
+      "replace",
+      "explain the meaning"
+    ]
+  },
+  {
+    "word": "attribute",
+    "meaning": "특성",
+    "synonym": "characteristic",
+    "example": "Color is an important attribute of these minerals.",
+    "decoys": [
+      "share out",
+      "separate"
+    ]
+  },
+  {
+    "word": "available",
+    "meaning": "이용 가능한",
+    "synonym": "accessible",
+    "example": "Several study rooms are available on the second floor.",
+    "decoys": [
+      "varied",
+      "give reasons for"
+    ]
+  },
+  {
+    "word": "beneficial",
+    "meaning": "유익한",
+    "synonym": "helpful",
+    "example": "Regular exercise is beneficial for memory and concentration.",
+    "decoys": [
+      "internal",
+      "preserve"
+    ]
+  },
+  {
+    "word": "bias",
+    "meaning": "편향",
+    "synonym": "prejudice",
+    "example": "The researchers changed the survey to reduce bias.",
+    "decoys": [
+      "prevailing",
+      "principal"
+    ]
+  },
+  {
+    "word": "capacity",
+    "meaning": "수용 능력",
+    "synonym": "ability",
+    "example": "The new battery has a greater storage capacity.",
+    "decoys": [
+      "length of time",
+      "process"
+    ]
+  },
+  {
+    "word": "cease",
+    "meaning": "중단하다",
+    "synonym": "stop",
+    "example": "The factory will cease production during the inspection.",
+    "decoys": [
+      "changing",
+      "very small"
+    ]
+  },
+  {
+    "word": "chronological",
+    "meaning": "시간순의",
+    "synonym": "sequential",
+    "example": "The exhibits are arranged in chronological order.",
+    "decoys": [
+      "productive",
+      "adjust"
+    ]
+  },
+  {
+    "word": "circumstance",
+    "meaning": "상황",
+    "synonym": "condition",
+    "example": "The result may differ under another circumstance.",
+    "decoys": [
+      "appear",
+      "track"
+    ]
+  },
+  {
+    "word": "clarify",
+    "meaning": "명확히 하다",
+    "synonym": "explain",
+    "example": "A diagram can clarify how the system works.",
+    "decoys": [
+      "stress",
+      "shared"
+    ]
+  },
+  {
+    "word": "classify",
+    "meaning": "분류하다",
+    "synonym": "categorize",
+    "example": "Biologists classify organisms by their shared characteristics.",
+    "decoys": [
+      "observational",
+      "impartial"
+    ]
+  },
+  {
+    "word": "coincide",
+    "meaning": "동시에 일어나다",
+    "synonym": "overlap",
+    "example": "The migration tends to coincide with warmer weather.",
+    "decoys": [
+      "allow",
+      "unbiased"
+    ]
+  },
+  {
+    "word": "collapse",
+    "meaning": "붕괴하다",
+    "synonym": "crumble",
+    "example": "The tunnel may collapse without additional support.",
+    "decoys": [
+      "meet",
+      "acquire"
+    ]
+  },
+  {
+    "word": "colleague",
+    "meaning": "동료",
+    "synonym": "coworker",
+    "example": "She discussed the findings with a colleague.",
+    "decoys": [
+      "improve",
+      "take up"
+    ]
+  },
+  {
+    "word": "commence",
+    "meaning": "시작하다",
+    "synonym": "begin",
+    "example": "Construction will commence after the rainy season.",
+    "decoys": [
+      "immense",
+      "source"
+    ]
+  },
+  {
+    "word": "commodity",
+    "meaning": "상품",
+    "synonym": "merchandise",
+    "example": "Coffee became an important commodity in international trade.",
+    "decoys": [
+      "guarantee",
+      "side by side"
+    ]
+  },
+  {
+    "word": "compatible",
+    "meaning": "양립 가능한",
+    "synonym": "consistent",
+    "example": "The new software is compatible with the existing system.",
+    "decoys": [
+      "whole",
+      "notice"
+    ]
+  },
+  {
+    "word": "compensate",
+    "meaning": "보상하다",
+    "synonym": "reimburse",
+    "example": "The grant will compensate volunteers for their travel costs.",
+    "decoys": [
+      "equal",
+      "continue"
+    ]
+  },
+  {
+    "word": "complexity",
+    "meaning": "복잡성",
+    "synonym": "intricacy",
+    "example": "The model cannot capture the full complexity of the ecosystem.",
+    "decoys": [
+      "wear away",
+      "occurrence"
+    ]
+  },
+  {
+    "word": "component",
+    "meaning": "구성 요소",
+    "synonym": "part",
+    "example": "Water is an essential component of living cells.",
+    "decoys": [
+      "set up",
+      "exact"
+    ]
+  },
+  {
+    "word": "comprehensive",
+    "meaning": "포괄적인",
+    "synonym": "thorough",
+    "example": "The report provides a comprehensive review of the evidence.",
+    "decoys": [
+      "approximate",
+      "forecast"
+    ]
+  },
+  {
+    "word": "concentrate",
+    "meaning": "집중하다",
+    "synonym": "focus",
+    "example": "Students can concentrate better in a quiet room.",
+    "decoys": [
+      "ultimately",
+      "protect"
+    ]
+  },
+  {
+    "word": "concept",
+    "meaning": "개념",
+    "synonym": "idea",
+    "example": "The lesson introduces the concept of natural selection.",
+    "decoys": [
+      "clear",
+      "main"
+    ]
+  },
+  {
+    "word": "conclude",
+    "meaning": "결론을 내리다",
+    "synonym": "infer",
+    "example": "We cannot conclude that the treatment works from one trial.",
+    "decoys": [
+      "develop gradually",
+      "earlier"
+    ]
+  },
+  {
+    "word": "conduct",
+    "meaning": "수행하다",
+    "synonym": "carry out",
+    "example": "The students will conduct a survey of campus transport.",
+    "decoys": [
+      "surpass",
+      "forbid"
+    ]
+  },
+  {
+    "word": "confirm",
+    "meaning": "확인하다",
+    "synonym": "verify",
+    "example": "A second measurement will confirm the result.",
+    "decoys": [
+      "leave out",
+      "share"
+    ]
+  },
+  {
+    "word": "consequence",
+    "meaning": "결과",
+    "synonym": "outcome",
+    "example": "Soil erosion is one consequence of removing trees.",
+    "decoys": [
+      "enlarge",
+      "thrive"
+    ]
+  },
+  {
+    "word": "considerable",
+    "meaning": "상당한",
+    "synonym": "substantial",
+    "example": "The restoration required considerable effort.",
+    "decoys": [
+      "direct",
+      "extent"
+    ]
+  },
+  {
+    "word": "consistent",
+    "meaning": "일관된",
+    "synonym": "uniform",
+    "example": "The two laboratories obtained consistent results.",
+    "decoys": [
+      "uncover",
+      "regain"
+    ]
+  },
+  {
+    "word": "constitute",
+    "meaning": "구성하다",
+    "synonym": "form",
+    "example": "Small businesses constitute a large part of the local economy.",
+    "decoys": [
+      "outer",
+      "pertinent"
+    ]
+  },
+  {
+    "word": "consume",
+    "meaning": "소비하다",
+    "synonym": "use up",
+    "example": "Older buildings often consume more energy.",
+    "decoys": [
+      "make easier",
+      "dependable"
+    ]
+  },
+  {
+    "word": "contemporary",
+    "meaning": "현대의",
+    "synonym": "modern",
+    "example": "The museum presents contemporary art from several countries.",
+    "decoys": [
+      "element",
+      "need"
+    ]
+  },
+  {
+    "word": "context",
+    "meaning": "맥락",
+    "synonym": "setting",
+    "example": "The meaning of a word can change with its context.",
+    "decoys": [
+      "vary",
+      "settle"
+    ]
+  },
+  {
+    "word": "contradict",
+    "meaning": "모순되다",
+    "synonym": "oppose",
+    "example": "The latest observations contradict the earlier prediction.",
+    "decoys": [
+      "basic",
+      "keep"
+    ]
+  },
+  {
+    "word": "contribute",
+    "meaning": "기여하다",
+    "synonym": "add",
+    "example": "Public libraries contribute to lifelong learning.",
+    "decoys": [
+      "produce",
+      "disclose"
+    ]
+  },
+  {
+    "word": "controversy",
+    "meaning": "논란",
+    "synonym": "dispute",
+    "example": "The proposed road caused controversy among local residents.",
+    "decoys": [
+      "slow",
+      "stiff"
+    ]
+  },
+  {
+    "word": "conventional",
+    "meaning": "전통적인",
+    "synonym": "traditional",
+    "example": "The engineer compared the device with a conventional engine.",
+    "decoys": [
+      "natural home",
+      "function"
+    ]
+  },
+  {
+    "word": "convert",
+    "meaning": "전환하다",
+    "synonym": "transform",
+    "example": "Plants convert sunlight into chemical energy.",
+    "decoys": [
+      "proposed explanation",
+      "order"
+    ]
+  },
+  {
+    "word": "crucial",
+    "meaning": "결정적인",
+    "synonym": "vital",
+    "example": "Accurate timing is crucial to the experiment.",
+    "decoys": [
+      "recognize",
+      "important"
+    ]
+  },
+  {
+    "word": "cumulative",
+    "meaning": "누적되는",
+    "synonym": "accumulating",
+    "example": "The researchers measured the cumulative effect of air pollution.",
+    "decoys": [
+      "demonstrate",
+      "concurrent"
+    ]
+  },
+  {
+    "word": "debate",
+    "meaning": "논쟁",
+    "synonym": "discussion",
+    "example": "The discovery sparked a debate about the origin of the species.",
+    "decoys": [
+      "huge",
+      "origin"
+    ]
+  },
+  {
+    "word": "decade",
+    "meaning": "십 년",
+    "synonym": "ten years",
+    "example": "The town doubled in size within a decade.",
+    "decoys": [
+      "effect",
+      "state clearly"
+    ]
+  },
+  {
+    "word": "decline",
+    "meaning": "감소하다",
+    "synonym": "decrease",
+    "example": "The bird population began to decline after the drought.",
+    "decoys": [
+      "put into practice",
+      "organization"
+    ]
+  },
+  {
+    "word": "deduce",
+    "meaning": "추론하다",
+    "synonym": "infer",
+    "example": "We can deduce the animal's diet from the shape of its teeth.",
+    "decoys": [
+      "suggest",
+      "following"
+    ]
+  },
+  {
+    "word": "define",
+    "meaning": "정의하다",
+    "synonym": "describe precisely",
+    "example": "The first paragraph should define the central term.",
+    "decoys": [
+      "motivation",
+      "enough"
+    ]
+  },
+  {
+    "word": "demonstrate",
+    "meaning": "입증하다",
+    "synonym": "show",
+    "example": "The experiment will demonstrate how pressure affects volume.",
+    "decoys": [
+      "include",
+      "add to"
+    ]
+  },
+  {
+    "word": "denote",
+    "meaning": "나타내다",
+    "synonym": "signify",
+    "example": "The blue lines denote rivers on this map.",
+    "decoys": [
+      "point to",
+      "study"
+    ]
+  },
+  {
+    "word": "dense",
+    "meaning": "밀집한",
+    "synonym": "compact",
+    "example": "A dense forest once covered the valley.",
+    "decoys": [
+      "native",
+      "short-lived"
+    ]
+  },
+  {
+    "word": "depict",
+    "meaning": "묘사하다",
+    "synonym": "portray",
+    "example": "The painting seems to depict a busy coastal market.",
+    "decoys": [
+      "conclude",
+      "explanatory framework"
+    ]
+  },
+  {
+    "word": "deprive",
+    "meaning": "빼앗다",
+    "synonym": "deny",
+    "example": "A long drought can deprive plants of essential water.",
+    "decoys": [
+      "restrain",
+      "move"
+    ]
+  },
+  {
+    "word": "detect",
+    "meaning": "발견하다",
+    "synonym": "discover",
+    "example": "The instrument can detect small changes in light.",
+    "decoys": [
+      "first",
+      "tendency"
+    ]
+  },
+  {
+    "word": "deviate",
+    "meaning": "벗어나다",
+    "synonym": "diverge",
+    "example": "Animals may deviate from their usual route during a storm.",
+    "decoys": [
+      "new development",
+      "experience"
+    ]
+  },
+  {
+    "word": "discrete",
+    "meaning": "별개의",
+    "synonym": "separate",
+    "example": "The researchers divided the process into discrete stages.",
+    "decoys": [
+      "understanding",
+      "distinctive"
+    ]
+  },
+  {
+    "word": "displace",
+    "meaning": "대체하다",
+    "synonym": "replace",
+    "example": "The new transport system may displace some older bus routes.",
+    "decoys": [
+      "examine closely",
+      "sound"
+    ]
+  },
+  {
+    "word": "distribute",
+    "meaning": "분배하다",
+    "synonym": "share out",
+    "example": "Volunteers distribute food to families after the flood.",
+    "decoys": [
+      "example",
+      "changing factor"
+    ]
+  },
+  {
+    "word": "diverse",
+    "meaning": "다양한",
+    "synonym": "varied",
+    "example": "The reserve supports a diverse range of plants.",
+    "decoys": [
+      "combine",
+      "confirm"
+    ]
+  },
+  {
+    "word": "domestic",
+    "meaning": "국내의",
+    "synonym": "internal",
+    "example": "Domestic demand for renewable energy has increased.",
+    "decoys": [
+      "explain the meaning",
+      "extensive"
+    ]
+  },
+  {
+    "word": "dominant",
+    "meaning": "지배적인",
+    "synonym": "prevailing",
+    "example": "One species became dominant after the forest fire.",
+    "decoys": [
+      "separate",
+      "adjust"
+    ]
+  },
+  {
+    "word": "duration",
+    "meaning": "지속 기간",
+    "synonym": "length of time",
+    "example": "The duration of daylight varies throughout the year.",
+    "decoys": [
+      "give reasons for",
+      "sufficient"
+    ]
+  },
+  {
+    "word": "dynamic",
+    "meaning": "역동적인",
+    "synonym": "changing",
+    "example": "A river is a dynamic system that constantly reshapes its banks.",
+    "decoys": [
+      "preserve",
+      "neighboring"
+    ]
+  },
+  {
+    "word": "efficient",
+    "meaning": "효율적인",
+    "synonym": "productive",
+    "example": "The new lighting system is more efficient than the old one.",
+    "decoys": [
+      "principal",
+      "support"
+    ]
+  },
+  {
+    "word": "emerge",
+    "meaning": "나타나다",
+    "synonym": "appear",
+    "example": "Young insects emerge from the soil in spring.",
+    "decoys": [
+      "process",
+      "artistic"
+    ]
+  },
+  {
+    "word": "emphasis",
+    "meaning": "강조",
+    "synonym": "stress",
+    "example": "The course places emphasis on careful observation.",
+    "decoys": [
+      "very small",
+      "assign"
+    ]
+  },
+  {
+    "word": "empirical",
+    "meaning": "경험적 증거에 근거한",
+    "synonym": "observational",
+    "example": "The argument requires empirical evidence rather than speculation.",
+    "decoys": [
+      "adjust",
+      "modify"
+    ]
+  },
+  {
+    "word": "enable",
+    "meaning": "가능하게 하다",
+    "synonym": "allow",
+    "example": "The telescope will enable scientists to observe distant stars.",
+    "decoys": [
+      "track",
+      "option"
+    ]
+  },
+  {
+    "word": "encounter",
+    "meaning": "마주치다",
+    "synonym": "meet",
+    "example": "Divers may encounter unusual organisms near the reef.",
+    "decoys": [
+      "shared",
+      "examine"
+    ]
+  },
+  {
+    "word": "enhance",
+    "meaning": "향상하다",
+    "synonym": "improve",
+    "example": "Clear illustrations can enhance a textbook's explanations.",
+    "decoys": [
+      "impartial",
+      "forebear"
+    ]
+  },
+  {
+    "word": "enormous",
+    "meaning": "거대한",
+    "synonym": "immense",
+    "example": "The glacier contains an enormous amount of fresh water.",
+    "decoys": [
+      "unbiased",
+      "expect"
+    ]
+  },
+  {
+    "word": "ensure",
+    "meaning": "확실하게 하다",
+    "synonym": "guarantee",
+    "example": "Careful labeling helps ensure that samples are not mixed up.",
+    "decoys": [
+      "acquire",
+      "evident"
+    ]
+  },
+  {
+    "word": "entire",
+    "meaning": "전체의",
+    "synonym": "whole",
+    "example": "The entire island was surveyed during the expedition.",
+    "decoys": [
+      "take up",
+      "method"
+    ]
+  },
+  {
+    "word": "equivalent",
+    "meaning": "동등한",
+    "synonym": "equal",
+    "example": "The two methods produced equivalent amounts of energy.",
+    "decoys": [
+      "source",
+      "suitable"
+    ]
+  },
+  {
+    "word": "erode",
+    "meaning": "침식하다",
+    "synonym": "wear away",
+    "example": "Strong currents gradually erode the riverbank.",
+    "decoys": [
+      "side by side",
+      "rough"
+    ]
+  },
+  {
+    "word": "establish",
+    "meaning": "설립하다",
+    "synonym": "set up",
+    "example": "The university plans to establish a new research center.",
+    "decoys": [
+      "notice",
+      "evaluate"
+    ]
+  },
+  {
+    "word": "estimate",
+    "meaning": "추정하다",
+    "synonym": "approximate",
+    "example": "Scientists estimate the age of the rock from its mineral content.",
+    "decoys": [
+      "continue",
+      "designate"
+    ]
+  },
+  {
+    "word": "eventually",
+    "meaning": "결국",
+    "synonym": "ultimately",
+    "example": "The abandoned field eventually became a forest.",
+    "decoys": [
+      "occurrence",
+      "suppose"
+    ]
+  },
+  {
+    "word": "evident",
+    "meaning": "분명한",
+    "synonym": "clear",
+    "example": "The difference was evident even without a microscope.",
+    "decoys": [
+      "exact",
+      "achieve"
+    ]
+  },
+  {
+    "word": "evolve",
+    "meaning": "진화하다",
+    "synonym": "develop gradually",
+    "example": "Species evolve as inherited traits change over generations.",
+    "decoys": [
+      "forecast",
+      "characteristic"
+    ]
+  },
+  {
+    "word": "exceed",
+    "meaning": "초과하다",
+    "synonym": "surpass",
+    "example": "The demand for housing may exceed the available supply.",
+    "decoys": [
+      "protect",
+      "accessible"
+    ]
+  },
+  {
+    "word": "exclude",
+    "meaning": "제외하다",
+    "synonym": "leave out",
+    "example": "The final analysis will exclude incomplete responses.",
+    "decoys": [
+      "main",
+      "helpful"
+    ]
+  },
+  {
+    "word": "expand",
+    "meaning": "확장하다",
+    "synonym": "enlarge",
+    "example": "The city plans to expand its network of bicycle lanes.",
+    "decoys": [
+      "earlier",
+      "prejudice"
+    ]
+  },
+  {
+    "word": "explicit",
+    "meaning": "명시적인",
+    "synonym": "direct",
+    "example": "The instructions contain an explicit warning about the chemical.",
+    "decoys": [
+      "forbid",
+      "ability"
+    ]
+  },
+  {
+    "word": "expose",
+    "meaning": "노출하다",
+    "synonym": "uncover",
+    "example": "Excavation may expose the foundations of an ancient building.",
+    "decoys": [
+      "share",
+      "stop"
+    ]
+  },
+  {
+    "word": "external",
+    "meaning": "외부의",
+    "synonym": "outer",
+    "example": "The shell protects the animal from external pressure.",
+    "decoys": [
+      "thrive",
+      "sequential"
+    ]
+  },
+  {
+    "word": "facilitate",
+    "meaning": "촉진하다",
+    "synonym": "make easier",
+    "example": "Shared databases facilitate cooperation between research teams.",
+    "decoys": [
+      "extent",
+      "condition"
+    ]
+  },
+  {
+    "word": "factor",
+    "meaning": "요인",
+    "synonym": "element",
+    "example": "Rainfall is one factor that affects crop growth.",
+    "decoys": [
+      "regain",
+      "explain"
+    ]
+  },
+  {
+    "word": "fluctuate",
+    "meaning": "변동하다",
+    "synonym": "vary",
+    "example": "Temperatures fluctuate sharply in the desert.",
+    "decoys": [
+      "pertinent",
+      "categorize"
+    ]
+  },
+  {
+    "word": "fundamental",
+    "meaning": "근본적인",
+    "synonym": "basic",
+    "example": "Water plays a fundamental role in the chemistry of life.",
+    "decoys": [
+      "dependable",
+      "overlap"
+    ]
+  },
+  {
+    "word": "generate",
+    "meaning": "발생시키다",
+    "synonym": "produce",
+    "example": "Wind turbines generate electricity without burning fuel.",
+    "decoys": [
+      "need",
+      "crumble"
+    ]
+  },
+  {
+    "word": "gradual",
+    "meaning": "점진적인",
+    "synonym": "slow",
+    "example": "The records reveal a gradual increase in sea level.",
+    "decoys": [
+      "settle",
+      "coworker"
+    ]
+  },
+  {
+    "word": "habitat",
+    "meaning": "서식지",
+    "synonym": "natural home",
+    "example": "Wetlands provide a habitat for many migratory birds.",
+    "decoys": [
+      "keep",
+      "begin"
+    ]
+  },
+  {
+    "word": "hypothesis",
+    "meaning": "가설",
+    "synonym": "proposed explanation",
+    "example": "The experiment was designed to test a specific hypothesis.",
+    "decoys": [
+      "disclose",
+      "merchandise"
+    ]
+  },
+  {
+    "word": "identify",
+    "meaning": "식별하다",
+    "synonym": "recognize",
+    "example": "Researchers can identify individual whales by their markings.",
+    "decoys": [
+      "stiff",
+      "consistent"
+    ]
+  },
+  {
+    "word": "illustrate",
+    "meaning": "설명하다",
+    "synonym": "demonstrate",
+    "example": "This diagram helps illustrate the movement of ocean currents.",
+    "decoys": [
+      "function",
+      "reimburse"
+    ]
+  },
+  {
+    "word": "immense",
+    "meaning": "막대한",
+    "synonym": "huge",
+    "example": "The library contains an immense collection of historical maps.",
+    "decoys": [
+      "order",
+      "intricacy"
+    ]
+  },
+  {
+    "word": "impact",
+    "meaning": "영향",
+    "synonym": "effect",
+    "example": "The study examines the impact of noise on urban wildlife.",
+    "decoys": [
+      "important",
+      "part"
+    ]
+  },
+  {
+    "word": "implement",
+    "meaning": "시행하다",
+    "synonym": "put into practice",
+    "example": "The council will implement the new recycling policy next month.",
+    "decoys": [
+      "concurrent",
+      "thorough"
+    ]
+  },
+  {
+    "word": "imply",
+    "meaning": "암시하다",
+    "synonym": "suggest",
+    "example": "A correlation does not necessarily imply a causal relationship.",
+    "decoys": [
+      "origin",
+      "focus"
+    ]
+  },
+  {
+    "word": "incentive",
+    "meaning": "유인책",
+    "synonym": "motivation",
+    "example": "A travel discount gives students an incentive to use the bus.",
+    "decoys": [
+      "state clearly",
+      "idea"
+    ]
+  },
+  {
+    "word": "incorporate",
+    "meaning": "포함하다",
+    "synonym": "include",
+    "example": "The revised model will incorporate the latest measurements.",
+    "decoys": [
+      "organization",
+      "infer"
+    ]
+  },
+  {
+    "word": "indicate",
+    "meaning": "가리키다",
+    "synonym": "point to",
+    "example": "Dark clouds often indicate an approaching storm.",
+    "decoys": [
+      "following",
+      "carry out"
+    ]
+  },
+  {
+    "word": "indigenous",
+    "meaning": "토착의",
+    "synonym": "native",
+    "example": "Several indigenous plants grow only on this island.",
+    "decoys": [
+      "enough",
+      "verify"
+    ]
+  },
+  {
+    "word": "infer",
+    "meaning": "추론하다",
+    "synonym": "conclude",
+    "example": "We can infer the climate from the types of pollen in the soil.",
+    "decoys": [
+      "add to",
+      "outcome"
+    ]
+  },
+  {
+    "word": "inhibit",
+    "meaning": "억제하다",
+    "synonym": "restrain",
+    "example": "Low temperatures can inhibit the growth of certain bacteria.",
+    "decoys": [
+      "study",
+      "substantial"
+    ]
+  },
+  {
+    "word": "initial",
+    "meaning": "초기의",
+    "synonym": "first",
+    "example": "The initial results encouraged the team to continue.",
+    "decoys": [
+      "short-lived",
+      "uniform"
+    ]
+  },
+  {
+    "word": "innovation",
+    "meaning": "혁신",
+    "synonym": "new development",
+    "example": "Innovation in battery design has improved energy storage.",
+    "decoys": [
+      "explanatory framework",
+      "form"
+    ]
+  },
+  {
+    "word": "insight",
+    "meaning": "통찰",
+    "synonym": "understanding",
+    "example": "The letters offer insight into everyday life in the ancient city.",
+    "decoys": [
+      "move",
+      "use up"
+    ]
+  },
+  {
+    "word": "inspect",
+    "meaning": "검사하다",
+    "synonym": "examine closely",
+    "example": "Engineers inspect the bridge at regular intervals.",
+    "decoys": [
+      "tendency",
+      "modern"
+    ]
+  },
+  {
+    "word": "instance",
+    "meaning": "사례",
+    "synonym": "example",
+    "example": "The discovery is an instance of cooperation between disciplines.",
+    "decoys": [
+      "experience",
+      "setting"
+    ]
+  },
+  {
+    "word": "integrate",
+    "meaning": "통합하다",
+    "synonym": "combine",
+    "example": "The course will integrate fieldwork with classroom study.",
+    "decoys": [
+      "distinctive",
+      "oppose"
+    ]
+  },
+  {
+    "word": "interpret",
+    "meaning": "해석하다",
+    "synonym": "explain the meaning",
+    "example": "Different observers may interpret the same image differently.",
+    "decoys": [
+      "sound",
+      "add"
+    ]
+  },
+  {
+    "word": "isolate",
+    "meaning": "분리하다",
+    "synonym": "separate",
+    "example": "Researchers isolate the cells before measuring their activity.",
+    "decoys": [
+      "changing factor",
+      "dispute"
+    ]
+  },
+  {
+    "word": "justify",
+    "meaning": "정당화하다",
+    "synonym": "give reasons for",
+    "example": "The author must justify each major claim with evidence.",
+    "decoys": [
+      "confirm",
+      "traditional"
+    ]
+  },
+  {
+    "word": "maintain",
+    "meaning": "유지하다",
+    "synonym": "preserve",
+    "example": "The building uses natural ventilation to maintain a comfortable temperature.",
+    "decoys": [
+      "extensive",
+      "transform"
+    ]
+  },
+  {
+    "word": "major",
+    "meaning": "주요한",
+    "synonym": "principal",
+    "example": "Access to water was a major concern for the early settlers.",
+    "decoys": [
+      "adjust",
+      "vital"
+    ]
+  },
+  {
+    "word": "mechanism",
+    "meaning": "작동 원리",
+    "synonym": "process",
+    "example": "The study explains the mechanism of heat transfer in metals.",
+    "decoys": [
+      "sufficient",
+      "accumulating"
+    ]
+  },
+  {
+    "word": "minimal",
+    "meaning": "최소한의",
+    "synonym": "very small",
+    "example": "The technique causes minimal damage to the specimen.",
+    "decoys": [
+      "neighboring",
+      "discussion"
+    ]
+  },
+  {
+    "word": "modify",
+    "meaning": "수정하다",
+    "synonym": "adjust",
+    "example": "The team will modify the equipment for use underwater.",
+    "decoys": [
+      "support",
+      "ten years"
+    ]
+  },
+  {
+    "word": "monitor",
+    "meaning": "관찰하다",
+    "synonym": "track",
+    "example": "Satellites monitor changes in the surface of the ocean.",
+    "decoys": [
+      "artistic",
+      "decrease"
+    ]
+  },
+  {
+    "word": "mutual",
+    "meaning": "상호의",
+    "synonym": "shared",
+    "example": "The agreement brought mutual benefits to both communities.",
+    "decoys": [
+      "assign",
+      "infer"
+    ]
+  },
+  {
+    "word": "neutral",
+    "meaning": "중립적인",
+    "synonym": "impartial",
+    "example": "A neutral observer recorded the debate.",
+    "decoys": [
+      "modify",
+      "describe precisely"
+    ]
+  },
+  {
+    "word": "objective",
+    "meaning": "객관적인",
+    "synonym": "unbiased",
+    "example": "The experiment requires an objective method of comparison.",
+    "decoys": [
+      "option",
+      "show"
+    ]
+  },
+  {
+    "word": "obtain",
+    "meaning": "얻다",
+    "synonym": "acquire",
+    "example": "Students can obtain the data from the public archive.",
+    "decoys": [
+      "examine",
+      "signify"
+    ]
+  },
+  {
+    "word": "occupy",
+    "meaning": "차지하다",
+    "synonym": "take up",
+    "example": "The restored gardens occupy the eastern part of the campus.",
+    "decoys": [
+      "forebear",
+      "compact"
+    ]
+  },
+  {
+    "word": "origin",
+    "meaning": "기원",
+    "synonym": "source",
+    "example": "The origin of the unusual mineral remains uncertain.",
+    "decoys": [
+      "expect",
+      "portray"
+    ]
+  },
+  {
+    "word": "parallel",
+    "meaning": "평행한",
+    "synonym": "side by side",
+    "example": "Two parallel channels carried water toward the city.",
+    "decoys": [
+      "evident",
+      "deny"
+    ]
+  },
+  {
+    "word": "perceive",
+    "meaning": "인식하다",
+    "synonym": "notice",
+    "example": "Different species perceive color in different ways.",
+    "decoys": [
+      "method",
+      "discover"
+    ]
+  },
+  {
+    "word": "persist",
+    "meaning": "지속하다",
+    "synonym": "continue",
+    "example": "The effects of the storm may persist for several weeks.",
+    "decoys": [
+      "suitable",
+      "diverge"
+    ]
+  },
+  {
+    "word": "phenomenon",
+    "meaning": "현상",
+    "synonym": "occurrence",
+    "example": "The scientist explained the phenomenon of bioluminescence.",
+    "decoys": [
+      "rough",
+      "separate"
+    ]
+  },
+  {
+    "word": "precise",
+    "meaning": "정확한",
+    "synonym": "exact",
+    "example": "The device provides a precise measurement of distance.",
+    "decoys": [
+      "evaluate",
+      "replace"
+    ]
+  },
+  {
+    "word": "predict",
+    "meaning": "예측하다",
+    "synonym": "forecast",
+    "example": "The model can predict changes in air pressure.",
+    "decoys": [
+      "designate",
+      "share out"
+    ]
+  },
+  {
+    "word": "preserve",
+    "meaning": "보존하다",
+    "synonym": "protect",
+    "example": "The project aims to preserve the historic waterfront.",
+    "decoys": [
+      "suppose",
+      "varied"
+    ]
+  },
+  {
+    "word": "primary",
+    "meaning": "주된",
+    "synonym": "main",
+    "example": "The primary purpose of the study is to compare soil types.",
+    "decoys": [
+      "achieve",
+      "internal"
+    ]
+  },
+  {
+    "word": "prior",
+    "meaning": "이전의",
+    "synonym": "earlier",
+    "example": "The lecture builds on prior knowledge of basic chemistry.",
+    "decoys": [
+      "characteristic",
+      "prevailing"
+    ]
+  },
+  {
+    "word": "prohibit",
+    "meaning": "금지하다",
+    "synonym": "forbid",
+    "example": "Park rules prohibit visitors from feeding wild animals.",
+    "decoys": [
+      "accessible",
+      "length of time"
+    ]
+  },
+  {
+    "word": "proportion",
+    "meaning": "비율",
+    "synonym": "share",
+    "example": "A large proportion of the sample consisted of clay.",
+    "decoys": [
+      "helpful",
+      "changing"
+    ]
+  },
+  {
+    "word": "prosper",
+    "meaning": "번영하다",
+    "synonym": "thrive",
+    "example": "The coastal town began to prosper as trade increased.",
+    "decoys": [
+      "prejudice",
+      "productive"
+    ]
+  },
+  {
+    "word": "range",
+    "meaning": "범위",
+    "synonym": "extent",
+    "example": "The instrument measures a wide range of frequencies.",
+    "decoys": [
+      "ability",
+      "appear"
+    ]
+  },
+  {
+    "word": "recover",
+    "meaning": "회복하다",
+    "synonym": "regain",
+    "example": "The forest may recover slowly after a severe fire.",
+    "decoys": [
+      "stop",
+      "stress"
+    ]
+  },
+  {
+    "word": "relevant",
+    "meaning": "관련 있는",
+    "synonym": "pertinent",
+    "example": "Only relevant evidence should be included in the report.",
+    "decoys": [
+      "sequential",
+      "observational"
+    ]
+  },
+  {
+    "word": "reliable",
+    "meaning": "믿을 만한",
+    "synonym": "dependable",
+    "example": "A reliable instrument gives similar results under the same conditions.",
+    "decoys": [
+      "condition",
+      "allow"
+    ]
+  },
+  {
+    "word": "require",
+    "meaning": "요구하다",
+    "synonym": "need",
+    "example": "Most plants require light and water to grow.",
+    "decoys": [
+      "explain",
+      "meet"
+    ]
+  },
+  {
+    "word": "resolve",
+    "meaning": "해결하다",
+    "synonym": "settle",
+    "example": "Further experiments may resolve the disagreement.",
+    "decoys": [
+      "categorize",
+      "improve"
+    ]
+  },
+  {
+    "word": "retain",
+    "meaning": "보유하다",
+    "synonym": "keep",
+    "example": "Some soils retain water longer than others.",
+    "decoys": [
+      "overlap",
+      "immense"
+    ]
+  },
+  {
+    "word": "reveal",
+    "meaning": "드러내다",
+    "synonym": "disclose",
+    "example": "The scan can reveal small cracks inside the metal.",
+    "decoys": [
+      "crumble",
+      "guarantee"
+    ]
+  },
+  {
+    "word": "rigid",
+    "meaning": "뻣뻣한",
+    "synonym": "stiff",
+    "example": "The rigid frame protects the delicate instruments.",
+    "decoys": [
+      "coworker",
+      "whole"
+    ]
+  },
+  {
+    "word": "role",
+    "meaning": "역할",
+    "synonym": "function",
+    "example": "Insects play a vital role in pollinating flowers.",
+    "decoys": [
+      "begin",
+      "equal"
+    ]
+  },
+  {
+    "word": "sequence",
+    "meaning": "순서",
+    "synonym": "order",
+    "example": "The diagram shows the sequence of events in cell division.",
+    "decoys": [
+      "merchandise",
+      "wear away"
+    ]
+  },
+  {
+    "word": "significant",
+    "meaning": "중요한",
+    "synonym": "important",
+    "example": "The findings represent a significant advance in the field.",
+    "decoys": [
+      "consistent",
+      "set up"
+    ]
+  },
+  {
+    "word": "simultaneous",
+    "meaning": "동시의",
+    "synonym": "concurrent",
+    "example": "The device can record simultaneous changes in pressure and temperature.",
+    "decoys": [
+      "reimburse",
+      "approximate"
+    ]
+  },
+  {
+    "word": "source",
+    "meaning": "출처",
+    "synonym": "origin",
+    "example": "The historian checked the source of the quotation.",
+    "decoys": [
+      "intricacy",
+      "ultimately"
+    ]
+  },
+  {
+    "word": "specify",
+    "meaning": "명시하다",
+    "synonym": "state clearly",
+    "example": "The instructions specify the amount of water to use.",
+    "decoys": [
+      "part",
+      "clear"
+    ]
+  },
+  {
+    "word": "structure",
+    "meaning": "구조",
+    "synonym": "organization",
+    "example": "The material has a structure similar to a honeycomb.",
+    "decoys": [
+      "thorough",
+      "develop gradually"
+    ]
+  },
+  {
+    "word": "subsequent",
+    "meaning": "그다음의",
+    "synonym": "following",
+    "example": "Subsequent studies confirmed the initial observation.",
+    "decoys": [
+      "focus",
+      "surpass"
+    ]
+  },
+  {
+    "word": "sufficient",
+    "meaning": "충분한",
+    "synonym": "enough",
+    "example": "The sample provides sufficient evidence for a preliminary conclusion.",
+    "decoys": [
+      "idea",
+      "leave out"
+    ]
+  },
+  {
+    "word": "supplement",
+    "meaning": "보충하다",
+    "synonym": "add to",
+    "example": "The lecturer will supplement the reading with a short demonstration.",
+    "decoys": [
+      "infer",
+      "enlarge"
+    ]
+  },
+  {
+    "word": "survey",
+    "meaning": "조사",
+    "synonym": "study",
+    "example": "A survey of local residents revealed strong support for the park.",
+    "decoys": [
+      "carry out",
+      "direct"
+    ]
+  },
+  {
+    "word": "temporary",
+    "meaning": "일시적인",
+    "synonym": "short-lived",
+    "example": "The species found temporary shelter in the abandoned building.",
+    "decoys": [
+      "verify",
+      "uncover"
+    ]
+  },
+  {
+    "word": "theory",
+    "meaning": "이론",
+    "synonym": "explanatory framework",
+    "example": "The theory explains several previously unrelated observations.",
+    "decoys": [
+      "outcome",
+      "outer"
+    ]
+  },
+  {
+    "word": "transfer",
+    "meaning": "옮기다",
+    "synonym": "move",
+    "example": "The device can transfer heat from one chamber to another.",
+    "decoys": [
+      "substantial",
+      "make easier"
+    ]
+  },
+  {
+    "word": "trend",
+    "meaning": "추세",
+    "synonym": "tendency",
+    "example": "The graph reveals a steady trend toward lower energy use.",
+    "decoys": [
+      "uniform",
+      "element"
+    ]
+  },
+  {
+    "word": "undergo",
+    "meaning": "겪다",
+    "synonym": "experience",
+    "example": "The material will undergo several tests before it is approved.",
+    "decoys": [
+      "form",
+      "vary"
+    ]
+  },
+  {
+    "word": "unique",
+    "meaning": "독특한",
+    "synonym": "distinctive",
+    "example": "Each island supports a unique combination of species.",
+    "decoys": [
+      "use up",
+      "basic"
+    ]
+  },
+  {
+    "word": "valid",
+    "meaning": "타당한",
+    "synonym": "sound",
+    "example": "A valid comparison requires measurements taken under similar conditions.",
+    "decoys": [
+      "modern",
+      "produce"
+    ]
+  },
+  {
+    "word": "variable",
+    "meaning": "변수",
+    "synonym": "changing factor",
+    "example": "Temperature is an important variable in this experiment.",
+    "decoys": [
+      "setting",
+      "slow"
+    ]
+  },
+  {
+    "word": "verify",
+    "meaning": "입증하다",
+    "synonym": "confirm",
+    "example": "Another laboratory will verify the accuracy of the results.",
+    "decoys": [
+      "oppose",
+      "natural home"
+    ]
+  },
+  {
+    "word": "widespread",
+    "meaning": "널리 퍼진",
+    "synonym": "extensive",
+    "example": "The discovery led to widespread interest in marine biology.",
+    "decoys": [
+      "add",
+      "proposed explanation"
+    ]
+  }
+]

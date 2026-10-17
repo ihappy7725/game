@@ -230,7 +230,8 @@ export type GachaResult = {
   cost: number; coin_balance: number;
 };
 export type WeeklyLeaderboard = {
-  rows: { rank: number; display_name: string; earned_this_week: number; is_me: boolean }[];
+  profiles_ready?: boolean;
+  rows: { rank: number; display_name: string; avatar_id?: string; earned_this_week: number; is_me: boolean }[];
   my_rank: number | null;
 };
 
@@ -279,7 +280,8 @@ export function fetchWeeklyLeaderboard(accessToken: string, signal?: AbortSignal
 export type RankedGame = "cab" | "fork" | "pop";
 export type RankedRecord = { run_id: string; game_id: RankedGame; difficulty: number; stage: number; score: number; elapsed_ms: number };
 export type GameLeaderboard = {
-  rows: { rank: number; display_name: string; score: number; elapsed_ms: number; is_me: boolean }[];
+  profiles_ready?: boolean;
+  rows: { rank: number; display_name: string; avatar_id?: string; score: number; elapsed_ms: number; is_me: boolean }[];
   my_rank: number | null; week_start: string; week_end: string; verification: "client_reported";
 };
 export function fetchGameLeaderboard(accessToken: string, game: RankedGame, difficulty: number, stage: number, signal?: AbortSignal) {

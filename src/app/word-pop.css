@@ -1,0 +1,140 @@
+/* 워드 팝: 스크롤 없이 한 화면에 담고, 단어 큐브를 화면의 주인공으로 키웁니다.
+ *
+ * 세로 공간은 "HUD → 미션 → 목표 → 보드 → 메시지/단어열쇠" 순서로 나누되
+ * 보드만 남은 공간을 전부 차지하는 정사각형으로 만듭니다. 매직 넘버로 높이를
+ * 빼던 기존 계산(100dvh - 360px)은 짧은 화면에서 보드 아랫줄을 잘라 먹었습니다. */
+.game-fullscreen .word-pop { height:100dvh; max-height:100dvh; overflow:hidden; display:flex; flex-direction:column; padding:0; }
+.pop-play { flex:1; min-height:0; width:100%; display:flex; flex-direction:column; align-items:center; gap:6px; padding:126px 12px 6px; }
+.game-fullscreen .word-pop>.word-note { flex:0 0 auto; padding:0 12px 4px; }
+
+/* 미션·목표 줄은 고정 높이를 차지하고, 남은 세로는 전부 보드가 씁니다. */
+.game-fullscreen .pop-mission { position:static; flex:0 0 auto; top:auto; width:min(640px,100%); padding:8px 16px; border-radius:18px; background:#fffef2cc; border:1px solid #ffffff; box-shadow:0 4px 14px #35707724; backdrop-filter:blur(10px); }
+.game-fullscreen .pop-mission-copy>span { font-size:10px; }
+.game-fullscreen .pop-mission-copy>strong { font-size:clamp(17px,2.2vh,25px); line-height:1.2; }
+.game-fullscreen .pop-mission-copy>small { font-size:10px; }
+.game-fullscreen .pop-score-goal { flex:0 0 auto; width:min(640px,100%); }
+.game-fullscreen .pop-score-goal progress { height:10px; margin-top:3px; }
+
+/* 보드 영역: 남은 공간 중 짧은 쪽에 맞춘 정사각형. 잘리는 줄이 생기지 않습니다. */
+.game-fullscreen .pop-board-wrap { flex:1 1 0; min-height:0; width:100%; margin:0; container-type:size; display:grid; place-items:center; }
+.game-fullscreen .pop-board { width:min(100cqw,100cqh,680px); height:auto; aspect-ratio:1; container-type:inline-size; --pop-gap:clamp(4px,.9cqw,9px); gap:var(--pop-gap); }
+
+/* ── 애니팡 느낌의 단어 큐브 ─────────────────────────────────────────── */
+.game-fullscreen .pop-tile {
+  border:0; border-radius:22%; padding:4% 3%; gap:2%; overflow:visible; isolation:isolate;
+  color:#2b4a56; font-weight:800; text-shadow:0 1px 0 #ffffffb0;
+  box-shadow:
+    inset 0 6px 8px -4px #ffffffe0,          /* 윗면 하이라이트 */
+    inset 0 -9px 9px -5px #0c333d38,         /* 아랫면 그림자로 입체감 */
+    inset 0 0 0 .18em #ffffffb8,            /* 사탕 테두리 */
+    0 4px 0 -1px #1f5c6a30, 0 7px 10px -3px #1b5a6a4d;
+  animation:none;
+}
+/* 비스듬한 광택 띠 */
+.pop-gloss { position:absolute; inset:7% 8% auto; height:34%; border-radius:50%; background:linear-gradient(#ffffffe8,#ffffff10); filter:blur(.5px); pointer-events:none; z-index:1; }
+/* 천천히 지나가는 반짝임 */
+.pop-twinkle { position:absolute; inset:0; border-radius:inherit; overflow:hidden; pointer-events:none; z-index:2; }
+.pop-twinkle:before { content:""; position:absolute; top:-60%; left:-120%; width:55%; height:220%; rotate:18deg; background:linear-gradient(90deg,#fff0,#fffffff0,#fff0); animation:pop-shine 4.6s ease-in-out infinite; animation-delay:calc(var(--pop-i,0) * -330ms); }
+.game-fullscreen .pop-tile>span { position:relative; z-index:3; font-size:clamp(8px,min(3.4cqi,calc(27cqi / var(--pop-len,8))),22px); line-height:1; opacity:.85; filter:drop-shadow(0 1px 0 #ffffffcc); }
+.game-fullscreen .pop-tile strong {
+  position:relative; z-index:3; display:block; width:100%; padding:0;
+  /* 글자 수에 맞춰 줄여 긴 단어도 큐브 밖으로 넘치지 않습니다. */
+  font-size:clamp(7px,min(3cqi,calc(30cqi / var(--pop-len,8))),18px);
+  line-height:1.08; overflow-wrap:anywhere; hyphens:auto;
+}
+.game-fullscreen .pop-tile i { z-index:4; top:-4%; right:2%; font-size:clamp(11px,3.6cqi,24px); color:#7b43ab; text-shadow:0 0 6px #ffffff; }
+.game-fullscreen .tile-selected { scale:1.09; filter:brightness(1.1) saturate(1.15); outline:0; box-shadow:inset 0 6px 8px -4px #fffffff0,inset 0 0 0 .22em #ffffff,0 0 0 .14em #4f6fb0,0 0 1.4em #ffe79a; animation:pop-hint-glow .8s ease-in-out infinite alternate; z-index:5; }
+.game-fullscreen .tile-hint { outline:0; box-shadow:inset 0 0 0 .2em #fff,0 0 0 .14em #8a5fd0,0 0 1.3em #c9a6ff; animation:pop-hint-glow .8s ease-in-out infinite alternate; }
+
+/* 팡! 터지는 순간 — 부풀었다가 빛으로 흩어집니다. */
+.game-fullscreen .tile-burst { animation:pop-impact .42s cubic-bezier(.3,1.5,.5,1) both; z-index:6; }
+.game-fullscreen .pop-sparks em { position:absolute; left:50%; top:50%; font-style:normal; font-size:clamp(10px,3.4cqi,24px); color:#fff6b0; text-shadow:0 0 10px #ffb066,0 0 20px #ff8a4b; animation:pop-spark .5s ease-out both; animation-delay:var(--spark-delay,0ms); }
+
+/* 단어 열쇠는 한 줄로 눌러 보드 자리를 뺏지 않습니다. */
+.game-fullscreen .pop-message { flex:0 0 auto; margin:0; min-height:0; font-size:11px; line-height:1.4; }
+.game-fullscreen .pop-word-key { flex:0 0 auto; grid-template-columns:repeat(6,minmax(0,1fr)); width:min(760px,100%); gap:5px; margin:0; font-size:9px; line-height:1.3; }
+.game-fullscreen .pop-word-key>span { padding:4px 6px; overflow:hidden; }
+.game-fullscreen .pop-word-key b { overflow-wrap:anywhere; }
+
+@keyframes pop-idle { 0%,100% { translate:calc(var(--pop-x,0) * (100% + var(--pop-gap))) calc(var(--pop-y,0) * (100% + var(--pop-gap))); } 50% { translate:calc(var(--pop-x,0) * (100% + var(--pop-gap))) calc(var(--pop-y,0) * (100% + var(--pop-gap)) - 2%); } }
+@keyframes pop-shine { 0%,62% { left:-120%; } 92%,100% { left:170%; } }
+@keyframes pop-wiggle { 0%,100% { rotate:-3deg; } 50% { rotate:3deg; } }
+@keyframes pop-hint-glow { to { filter:brightness(1.25) saturate(1.2); } }
+
+@media(max-width:700px) {
+  .pop-play { padding:116px 8px 4px; gap:4px; }
+  .game-fullscreen .pop-mission { padding:6px 12px; }
+  .game-fullscreen .pop-word-key { grid-template-columns:repeat(3,minmax(0,1fr)); font-size:8px; }
+  .game-fullscreen .pop-message { font-size:9px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .game-fullscreen .pop-tile,.game-fullscreen .tile-selected { animation:none!important; }
+  .pop-twinkle { display:none; }
+}
+
+/* 낮은 창(노트북 가로 화면)에서는 미션과 목표를 한 줄로 합치고 상단 여백을 줄여
+ * 보드가 가져갈 세로 공간을 최대한 확보합니다. */
+@media(min-width:900px) and (max-height:820px) {
+  .game-fullscreen .arcade-stats { top:46px; height:52px; padding:6px 18px; }
+  .game-fullscreen .arcade-stats strong { font-size:18px; }
+  .pop-play { padding:106px 12px 2px; gap:4px; align-items:stretch;
+    display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); grid-template-rows:auto minmax(0,1fr) auto auto; justify-items:center; align-content:stretch; }
+  .game-fullscreen .pop-mission { grid-area:1/1; align-self:center; width:100%; max-width:520px; padding:5px 14px; }
+  .game-fullscreen .pop-mission-copy>strong { font-size:clamp(16px,2.6vh,22px); }
+  .game-fullscreen .pop-score-goal { grid-area:1/2; align-self:center; width:100%; max-width:420px; }
+  .game-fullscreen .pop-board-wrap { grid-area:2/1/3/3; }
+  .game-fullscreen .pop-message { grid-area:3/1/4/3; }
+  .game-fullscreen .pop-word-key { grid-area:4/1/5/3; }
+  .game-fullscreen .word-pop>.word-note { display:none; }
+}
+
+/* 교환 중에는 유휴 흔들림 대신 실제 두 큐브의 이동 전환만 실행합니다. */
+.word-pop[data-phase=swap] .pop-tile,.word-pop[data-phase=return] .pop-tile { animation:none; }
+.game-fullscreen .pop-mission { margin:0; }
+.game-fullscreen .pop-intro,.game-fullscreen .pop-result { margin:126px auto 10px; flex:1; min-height:0; width:min(740px,calc(100% - 24px)); }
+@media(max-width:600px) { .game-fullscreen .pop-intro,.game-fullscreen .pop-result { margin-top:116px; } }
+
+/* 클릭 영역은 고정하고 큐브 안의 빛·문양만 살짝 움직여 조작이 흔들리지 않게 합니다. */
+.game-fullscreen .pop-tile>.pop-gloss { animation:pop-soft-light 3.4s ease-in-out infinite; animation-delay:calc(var(--pop-i,0) * -210ms); }
+.game-fullscreen .pop-tile>span:not(.pop-sparks) { animation:pop-symbol-float 3.4s ease-in-out infinite; animation-delay:calc(var(--pop-i,0) * -210ms); }
+@keyframes pop-soft-light { 50% { opacity:.55; transform:scaleX(.88); } }
+@keyframes pop-symbol-float { 50% { transform:translateY(-2px); } }
+@media(prefers-reduced-motion:reduce) { .pop-tile>.pop-gloss,.pop-tile>span { animation:none!important; } }
+
+/* 높이가 낮은 가로 화면에서는 보드 옆으로 안내를 옮겨 큐브 높이를 확보합니다. */
+@media(orientation:landscape) and (max-height:650px) {
+ .game-fullscreen .arcade-stats { top:46px; height:52px; padding:6px 18px; }
+ .game-fullscreen .arcade-stats strong { font-size:18px; }
+ .game-fullscreen .pop-play { padding:106px 12px 4px; display:grid; grid-template-columns:minmax(150px,1fr) minmax(0,2fr); grid-template-rows:auto auto auto minmax(0,1fr); gap:5px 14px; align-items:start; }
+ .game-fullscreen .pop-mission { grid-area:1/1; width:100%; padding:5px 10px; }
+ .game-fullscreen .pop-mission-copy>strong { font-size:16px; }
+ .game-fullscreen .pop-mission-copy>span,.game-fullscreen .pop-mission-copy>small { font-size:8px; }
+ .game-fullscreen .pop-score-goal { grid-area:2/1; width:100%; }
+ .game-fullscreen .pop-board-wrap { grid-area:1/2/5/3; height:100%; align-self:stretch; }
+ .game-fullscreen .pop-message { grid-area:3/1; font-size:9px; }
+ .game-fullscreen .pop-word-key { grid-area:4/1; grid-template-columns:repeat(2,minmax(0,1fr)); font-size:8px; align-self:center; }
+ .game-fullscreen .word-pop>.word-note { display:none; }
+}
+
+/* 사전은 필요할 때 펼칩니다. 긴 뜻 목록이 큐브 영역을 줄이지 않습니다. */
+.pop-footer { position:relative; flex:0 0 auto; display:flex; align-items:center; gap:8px; justify-content:space-between; width:min(760px,100%); min-height:24px; }
+.game-fullscreen .pop-footer .pop-message { text-align:left; min-width:0; flex:1; }
+.pop-glossary { position:relative; flex-shrink:0; font-size:10px; }
+.pop-glossary summary { cursor:pointer; padding:4px 9px; border:1px solid #a5ccbc; background:#fff9e9; border-radius:14px; white-space:nowrap; }
+.game-fullscreen .pop-glossary .pop-word-key { position:absolute; bottom:32px; right:0; width:min(600px,calc(100vw - 28px)); z-index:20; padding:10px; border:1px solid #9fc4b5; border-radius:14px; background:#fffdf3; box-shadow:0 7px 25px #285b6844; grid-template-columns:repeat(3,minmax(0,1fr)); font-size:11px; }
+.game-fullscreen .word-pop>.word-note { display:none; }
+@media(max-width:600px) {
+ .game-fullscreen .pop-mission { padding:4px 8px; }
+ .game-fullscreen .pop-mission-copy { gap:1px; }
+ .game-fullscreen .pop-mission-copy>strong { font-size:17px; line-height:1.2; }
+ .game-fullscreen .pop-mission-copy>span,.game-fullscreen .pop-mission-copy>small { font-size:8px; }
+ .game-fullscreen .pop-footer .pop-message { font-size:8px; }
+}
+@media(min-width:900px) and (max-height:820px) { .game-fullscreen .pop-footer { grid-area:3/1/5/3; } }
+@media(orientation:landscape) and (max-height:650px) {
+ .game-fullscreen .pop-play { grid-template-rows:auto auto minmax(0,1fr); }
+ .game-fullscreen .pop-footer { grid-area:3/1; flex-direction:column; align-items:stretch; gap:6px; }
+ .game-fullscreen .pop-board-wrap { grid-area:1/2/4/3; }
+ .pop-glossary { align-self:start; }
+ .game-fullscreen .pop-glossary .pop-word-key { left:0; right:auto; width:260px; grid-template-columns:repeat(2,minmax(0,1fr)); }
+}

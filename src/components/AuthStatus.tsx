@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { LogIn, LogOut, UserRound } from "lucide-react";
+import { LogIn, LogOut } from "lucide-react";
+import { PlayerAvatar } from "./PlayerProfile";
 import { supabaseConfigHint } from "@/lib/supabase/env";
 import { useAuth } from "@/lib/useAuth";
 
@@ -55,13 +56,13 @@ export function AuthStatus() {
 
   return (
     <div className="flex items-center gap-2">
-      <span
+      <Link href="/profile" aria-label="프로필 설정"
         className="flex max-w-[6rem] items-center gap-1.5 text-xs text-white/50 lg:max-w-[11rem]"
-        title={state.email ?? undefined}
+        title="닉네임과 캐릭터 설정"
       >
-        <UserRound className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
-        <span className="truncate">{state.email ?? "로그인됨"}</span>
-      </span>
+        <PlayerAvatar id={state.avatarId}/>
+        <span className="truncate">{state.nickname ?? "프로필 설정"}</span>
+      </Link>
       <button
         type="button"
         onClick={handleSignOut}

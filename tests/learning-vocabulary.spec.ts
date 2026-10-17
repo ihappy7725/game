@@ -18,7 +18,7 @@ async function rememberCards(page: Page, count: number) {
 }
 
 test("직접 작성 어휘·예문과 오염된 저장 값·해제 조건·모든 게임 가속 하한", () => {
-  expect(VOCAB.length).toBe(214); expect(new Set(VOCAB.map(v => v.word)).size).toBe(VOCAB.length);
+  expect(VOCAB.length).toBe(4000); expect(new Set(VOCAB.map(v => v.word)).size).toBe(VOCAB.length);
   for (const v of VOCAB) { expect(v.example.length).toBeGreaterThan(20); expect(v.meaning.length).toBeGreaterThan(0); expect(new Set([v.synonym, ...v.decoys]).size).toBe(3); }
   const record = parseLearning(JSON.stringify({ learned: ["abundant", "abundant", "invalid-entry", 5], stages: { cab: [1, 2, 0], fork: [0, -1, null] } }));
   expect(record.learned).toEqual(["abundant"]); expect(unlockedDifficulty(record, "cab")).toBe(2); expect(unlockedDifficulty(record, "fork")).toBe(0); expect(parseLearning("broken").learned).toEqual([]);
@@ -32,7 +32,7 @@ test("직접 작성 어휘·예문과 오염된 저장 값·해제 조건·모�
 test("100단어 블록·예문·플래시카드·중복 없는 학습량·재접속 저장·중앙 고정 창", async ({ page }) => {
   let writes = 0; await page.route("**/api/**", route => { if (route.request().method() === "POST") writes++; return route.continue(); });
   await page.goto("/"); const dialog = await library(page); await expect(dialog.locator(".vocab-blocks button")).toHaveCount(40);
-  await expect(dialog.getByRole("button", { name: "단어 블록 4", exact: true })).toBeDisabled();
+  for (const block of ["단어 블록 4", "단어 블록 40"]) await expect(dialog.getByRole("button", { name: block, exact: true })).toBeEnabled();
   await dialog.getByRole("button", { name: "단어 블록 1", exact: true }).click(); await expect(dialog.locator(".vocab-word-list li")).toHaveCount(100);
   await dialog.getByRole("button", { name: "플래시카드 시작" }).click(); await dialog.getByRole("button", { name: "단어 정답 뒤집기" }).click(); await expect(dialog).toContainText(VOCAB[0].example);
   await dialog.getByRole("button", { name: "기억했어요", exact: true }).click(); await expect(dialog.getByRole("progressbar", { name: "단어장 전체 학습량" })).toHaveAttribute("value", "1");

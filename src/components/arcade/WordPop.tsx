@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, type CSSProperties } from "react";
+import { ResultPages } from "./ResultPages";
 import { GameHud } from "./GameHud";
 import { useGamePause } from "./GamePause";
 import { useGameLearning } from "@/lib/learning-progress";
@@ -151,15 +152,15 @@ export function WordPop({ difficulty = 0 }: { difficulty?: number }) {
     {phase === "ready" ? <div className="pop-intro"><span aria-hidden="true">🫧</span><h3>단어를 맞추고, 팡!</h3><p>이웃한 두 카드를 클릭하거나 밀어서<br/>같은 영단어 3개를 가로·세로로 이으세요.</p><p>한국어 미션 +300점 · 4개는 줄 폭탄 · 5개는 별 폭탄<br/>미션을 깰수록 제한 시간과 연쇄 속도가 빨라져요<br/>60초 안에 목표 점수 달성! 총 5개 스테이지에 도전해요.<br/>같은 단계·난이도에서 더 빨리 클리어할수록 높은 순위!</p><button className="word-primary" onClick={() => start()}>워드 팝 시작</button></div> : result ? <div className="pop-result">
       <GameOutcome outcome={presentation.outcome}/><h3>{phase === "stage" ? stage === 5 ? "모든 스테이지 클리어!" : `스테이지 ${stage} 클리어!` : "오늘의 팝 타임 끝!"}</h3>
       <p>{run.score}점 / 목표 {targetScore}점 · 한국어 미션 {run.missions}개 성공<br/>{lastRecord ? `클리어 시간 ${formatPopTime(lastRecord.elapsedMs)}` : "다음에는 힌트와 폭탄으로 더 빠르게!"}</p>
-      {phase === "stage" ? <section className="pop-records" aria-label="워드 팝 시간 순위"><h4>이 브라우저의 시간 순위</h4><small>스테이지 {stage} · {["초급", "중급", "고급"][difficulty]} · 빠른 시간 순</small><ol>{records.map((record, i) => <li key={`${record.at}-${i}`} data-current={record === lastRecord}><b>{i + 1}위 {record === lastRecord ? "이번 기록" : "이전 기록"}</b><span>{formatPopTime(record.elapsedMs)}</span></li>)}</ol><p>{recordMessage}</p></section> : null}
+      {phase === "stage" ? <section className="pop-records" aria-label="워드 팝 시간 순위"><h4>이 브라우저의 시간 순위</h4><small>스테이지 {stage} · {["초급", "중급", "고급"][difficulty]} · 빠른 시간 순</small><ResultPages label="워드 팝 시간 기록" items={records.map((record, i) => <li key={`${record.at}-${i}`} data-current={record === lastRecord}><b>{i + 1}위 {record === lastRecord ? "이번 기록" : "이전 기록"}</b><span>{formatPopTime(record.elapsedMs)}</span></li>)}/><p>{recordMessage}</p></section> : null}
       <ShareScore game={`워드 팝 스테이지 ${stage}${lastRecord ? ` · ${formatPopTime(lastRecord.elapsedMs)}` : ""}`} score={run.score}/>
       {phase === "stage" && lastRecord ? <RankedRecordSave key={attempt?.runId ?? "guest"} attempt={attempt} game="pop" difficulty={difficulty} stage={stage} score={run.score} elapsedMs={lastRecord.elapsedMs}/> : null}
       <div className="pop-actions">{phase === "stage" && stage < 5 ? <button className="word-primary" onClick={() => start(stage + 1)}>다음 스테이지</button> : null}<button className="word-primary" onClick={() => start()}>다시 팝!</button></div>
-    </div> : <>
+    </div> : <div className="pop-play">
       <div className="pop-mission" aria-label="한국어 미션"><div className="pop-mission-copy"><span>이 뜻의 단어를 터뜨려요</span><strong>{words[run.target]?.meaning}</strong><small>{run.progress}/{goal}개 · 미션 {run.missions}개 성공 · {Math.ceil(missionRemaining/1000)}초</small></div></div>
       <div className="pop-score-goal"><div><b>STAGE {stage}</b><span>{run.score} / {targetScore}점</span><button disabled={paused || phase !== "play"} onClick={() => { const move = popLegalMove(boardRef.current); setHint(move ?? []); setMessage("반짝이는 두 카드를 바꿔보세요!"); }}>힌트</button></div><progress aria-label="스테이지 목표 점수" max={targetScore} value={Math.min(targetScore, run.score)}/></div>
       <div className="pop-board-wrap"><div className={`pop-board ${fall ? "board-falling" : ""}`} aria-label="단어 퍼즐 보드">
-        {board.map((tile, index) => <button key={index} style={movement(index)} data-kind={tile.kind} className={`pop-tile tile-${tile.kind} ${selected === index ? "tile-selected" : ""} ${cleared.includes(index) ? "tile-burst" : ""} ${hint.includes(index) ? "tile-hint" : ""} ${exchange && [exchange.a, exchange.b].includes(index) ? "tile-exchanging" : ""}`} disabled={paused || phase !== "play"} aria-label={`${Math.floor(index / 7) + 1}행 ${index % 7 + 1}열 ${words[tile.kind]?.word}${tile.special ? tile.special === "row" ? " 줄 폭탄" : " 별 폭탄" : ""}`} aria-pressed={selected === index}
+        {board.map((tile, index) => <button key={index} style={{ ...movement(index), "--pop-len": Math.max(4, (words[tile.kind]?.word.length ?? 8)), "--pop-i": index % 7 + Math.floor(index / 7) } as CSSProperties} data-kind={tile.kind} className={`pop-tile tile-${tile.kind} ${selected === index ? "tile-selected" : ""} ${cleared.includes(index) ? "tile-burst" : ""} ${hint.includes(index) ? "tile-hint" : ""} ${exchange && [exchange.a, exchange.b].includes(index) ? "tile-exchanging" : ""}`} disabled={paused || phase !== "play"} aria-label={`${Math.floor(index / 7) + 1}행 ${index % 7 + 1}열 ${words[tile.kind]?.word}${tile.special ? tile.special === "row" ? " 줄 폭탄" : " 별 폭탄" : ""}`} aria-pressed={selected === index}
           onClick={() => { if (pointer.current.suppress) { pointer.current.suppress = false; return; } choose(index); }}
           onPointerDown={e => { pointer.current = { index, id: e.pointerId, x: e.clientX, y: e.clientY, suppress: false }; e.currentTarget.setPointerCapture(e.pointerId); }}
           onPointerCancel={() => { pointer.current.index = -1; }}
@@ -168,10 +169,10 @@ export function WordPop({ difficulty = 0 }: { difficulty?: number }) {
             if (from.index !== index || from.id !== e.pointerId || Math.max(Math.abs(dx), Math.abs(dy)) < 14) return;
             const direction = Math.abs(dx) > Math.abs(dy) ? dx > 0 ? 1 : -1 : dy > 0 ? 7 : -7;
             pointer.current.suppress = true; swap(index, index + direction);
-          }}><span>{["✦", "●", "◆", "♥", "✿", "⬟"][tile.kind]}</span><strong>{words[tile.kind]?.word}</strong>{tile.special ? <i>{tile.special === "row" ? "↔" : "★"}</i> : null}{cleared.includes(index) ? <span className="pop-sparks" aria-hidden="true">{Array.from({ length: 6 }, (_, i) => <em key={i} style={{ "--spark-angle": `${i * 60}deg` } as CSSProperties}>✦</em>)}</span> : null}</button>)}
+          }}><em className="pop-gloss" aria-hidden="true"/><em className="pop-twinkle" aria-hidden="true"/><span>{["✦", "●", "◆", "♥", "✿", "⬟"][tile.kind]}</span><strong>{words[tile.kind]?.word}</strong>{tile.special ? <i>{tile.special === "row" ? "↔" : "★"}</i> : null}{cleared.includes(index) ? <span className="pop-sparks" aria-hidden="true">{Array.from({ length: 10 }, (_, i) => <em key={i} style={{ "--spark-angle": `${i * 36}deg`, "--spark-delay": `${i % 3 * 40}ms` } as CSSProperties}>{i % 2 ? "✦" : "●"}</em>)}</span> : null}</button>)}
       </div>{paused ? <div className="word-pause">잠깐 쉬는 중 · 우측 상단 재생 버튼을 눌러주세요</div> : null}</div>
-      <p className="pop-message" role="status">{message}</p><div className="pop-word-key">{words.map((word, i) => <span key={word.word} className={`key-${i}`}><b>{word.word}</b> {word.meaning}</span>)}</div>
-    </>}
+      <div className="pop-footer"><p className="pop-message" role="status">{message}</p><details className="pop-glossary"><summary>단어 뜻 보기</summary><div className="pop-word-key">{words.map((word, i) => <span key={word.word} className={`key-${i}`}><b>{word.word}</b> {word.meaning}</span>)}</div></details></div>
+    </div>}
     <p className="word-note">브라우저별 연습 기록 · 코인과 원격 DB에는 자동 저장하지 않습니다.</p>
   </section>;
 }

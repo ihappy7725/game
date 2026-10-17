@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { fetchReviewMistakes, recordReviewAnswer, type MistakeSource, type VocabAnswer } from "@/lib/api";
 import { gameError, tokenForGameUser, useGameState } from "@/lib/game-state";
 import { useGameResource } from "@/components/dorm/useGameResource";
+import { ResultPages } from "./ResultPages";
 import { GameHud } from "./GameHud";
 import { useGamePause } from "./GamePause";
 import { useGameLearning } from "@/lib/learning-progress";
@@ -17,16 +18,18 @@ import { useArcadeTicker } from "./useArcadeTicker";
 import { shuffled, shuffledDeck, VOCAB } from "@/lib/vocab";
 
 type Question = { prompt: string; correct_answer: string; source?: string };
+/** 4,000단어 전체를 렌더마다 다시 만들지 않도록 한 번만 변환합니다. */
+const PRACTICE_QUESTIONS: Question[] = VOCAB.map(q => ({ prompt: q.word, correct_answer: q.synonym }));
 const buttonClass = "rounded-xl border border-violet-200/25 px-4 py-3 hover:bg-white/10 disabled:opacity-40";
 export function MemoryBossRaid({difficulty=0}:{difficulty?:number}) {
   const { auth } = useGameState();
   if(auth.status === "loading") return <MemoryLobby loading message="로그인 상태 확인 중…"/>;
-  return auth.status === "signed-in" ? <AccountBoss key={auth.userId} userId={auth.userId} difficulty={difficulty}/> : <BossGame questions={VOCAB.map(q => ({ prompt:q.word, correct_answer:q.synonym }))} difficulty={difficulty}/>;
+  return auth.status === "signed-in" ? <AccountBoss key={auth.userId} userId={auth.userId} difficulty={difficulty}/> : <BossGame questions={PRACTICE_QUESTIONS} difficulty={difficulty}/>;
 }
 function AccountBoss({ userId,difficulty }: { userId: string; difficulty:number }) {
   const resource = useGameResource(userId, fetchReviewMistakes);
   const [practice, setPractice] = useState(false);
-  if (practice) return <BossGame questions={VOCAB.map(q => ({ prompt:q.word, correct_answer:q.synonym }))} difficulty={difficulty}/>;
+  if (practice) return <BossGame questions={PRACTICE_QUESTIONS} difficulty={difficulty}/>;
   if (resource.loading) return <MemoryLobby loading message="나의 오답을 불러오는 중…"/>;
   const items = Array.isArray(resource.data?.items) ? resource.data.items : null;
   const error = resource.error ?? (!items ? "복습 기록 응답을 확인하지 못했어요. 잠시 후 새로고침하거나 예제 카드로 연습해 주세요." : null);
@@ -80,12 +83,12 @@ function BossGame({ questions:sourceQuestions, userId,difficulty }: { questions:
     finally { if(mounted.current)setSaving(false); }
   }
   function restart() { presentation.reset(); setIndex(0);setAnswers([]);judged.current=false;locked.current=false;setMessage("");setPhase("ready"); }
-  return <section aria-label="오답 보스전" data-paused={paused} className="boss-game flashcard-game arcade-art-game space-y-6 rounded-3xl p-6 sm:p-10">
+  return <section aria-label="오답 보스전" data-phase={phase} data-paused={paused} className="boss-game flashcard-game arcade-art-game space-y-6 rounded-3xl p-6 sm:p-10">
     <GameHud className="memory-stats" label="메모리 상태"><span>STAGE {difficulty+1}</span><span>카드 {phase==="ready" ? 0 : index+1}/{questions.length}</span><span>기억 <strong>{correct}</strong></span><span className="memory-tempo">떠올리기 {Math.ceil(remaining/1000)}초</span></GameHud>
     <div className="memory-library art-landscape" aria-hidden="true"/><div className="memory-glow" aria-hidden="true"/><ArcadeEffects kind="ambient"/>{phase==="ready" ? <header><p className="text-sm text-violet-200">기억을 되찾는 한 장의 카드</p><h2 className="mt-2 text-3xl font-bold">메모리 카드</h2><p className="mt-3 text-sm text-violet-100/70">{userId ? "내 오답 복습" : "예제 연습 · 개인 오답이나 코인에 반영되지 않습니다."}</p></header> : null}
     {phase==="ready" ? <div className="space-y-5"><div className="flashcard-preview" aria-hidden="true"><i/><i/><i/><span>✦</span></div><p className="text-sm leading-relaxed">앞면을 보고 동의어를 떠올린 다음 카드를 뒤집으세요. 기억한 카드와 다시 볼 카드를 나눕니다. 카드가 진행될수록 생각할 시간이 짧아집니다. 시간 초과 카드는 다시 복습하세요.</p><p className="text-xs text-white/60">자동 채점이 아닌 자가 복습입니다. 결과를 저장하기 전까지 서버 오답은 바뀌지 않습니다.</p><button className={buttonClass} onClick={start}>플래시카드 시작</button></div> : phase==="over" ? <div className="space-y-5">
       <GameOutcome outcome={presentation.outcome}/><h3 className="text-2xl font-bold">오늘의 복습 완료</h3><p>기억했어요 {correct}장 · 다시 볼 카드 {questions.length-correct}장</p>
-      <ol className="space-y-3">{answers.map((answer,i)=><li key={i} className="rounded-xl bg-white/5 p-3"><span className="mr-3">{answer.was_correct ? "✓" : "↻"}</span>{answer.prompt} → {answer.correct_answer}</li>)}</ol>
+      <ResultPages label="복습 결과" items={answers.map((answer,i)=><li key={i} className="rounded-xl bg-white/5 p-3"><span className="mr-3">{answer.was_correct ? "✓" : "↻"}</span>{answer.prompt} → {answer.correct_answer}</li>)}/>
       {userId ? <button className={buttonClass} disabled={saving || Boolean(message)} onClick={save}>{saving ? "저장 중…" : "오답 복습 저장"}</button> : null}
       <button className={buttonClass} disabled={saving} onClick={restart}>다시 복습</button>
       <ShareScore game="메모리 카드 자가 복습" score={correct*100}/>

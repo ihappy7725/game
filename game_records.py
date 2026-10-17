@@ -66,6 +66,8 @@ def register_game_records(app: FastAPI, require_client: Callable, require_user: 
     ):
         user_id = require_user(authorization)
         validate_record_group(game_id, stage)
-        return record_rpc(require_client(), "game_record_leaderboard", {
+        result = record_rpc(require_client(), "game_record_leaderboard", {
             "p_user_id": user_id, "p_game_id": game_id, "p_difficulty": difficulty, "p_stage": stage, "p_limit": limit,
         })
+        result.setdefault("profiles_ready", False)
+        return result

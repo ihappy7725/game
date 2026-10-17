@@ -56,7 +56,9 @@ export function createForkMaterials() {
     if(disposed)return;
     for(const [texture,x,y,w,h] of [[sand,.45,.66,.1,.14],[cliff,.64,.46,.1,.18]] as const){
       const canvas=texture.image as HTMLCanvasElement,ctx=canvas.getContext("2d");if(!ctx)continue;
-      ctx.drawImage(art,art.naturalWidth*x,art.naturalHeight*y,art.naturalWidth*w,art.naturalHeight*h,0,0,512,512);texture.needsUpdate=true;texture.userData.source="original-art";
+      // 원근이 들어 있는 원화를 그대로 반복하면 늘어난 무늬가 생기므로 바탕 재질에 옅게 혼합합니다.
+      ctx.globalAlpha=texture===sand ? .35:.22;
+      ctx.drawImage(art,art.naturalWidth*x,art.naturalHeight*y,art.naturalWidth*w,art.naturalHeight*h,0,0,512,512);ctx.globalAlpha=1;texture.needsUpdate=true;texture.userData.source="original-art";
     }
   };
   art.src="/arcade/cliff-world-v1.webp";
