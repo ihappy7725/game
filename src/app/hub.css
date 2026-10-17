@@ -1057,3 +1057,39 @@
   .word-world { height:clamp(230px,calc(100dvh - 285px),410px); }.cliff-runner { width:42px; }.fork-sign { width:32%; top:23%; padding:10px 3px; font-size:11px; }.fork-0 { left:3%; }.fork-1 { right:3%; }.fork-sign>span { font-size:20px; }.trail-event { font-size:9px; padding:6px 8px; }.word-touch { gap:5px; }.word-touch button { font-size:9px; padding:11px 8px; flex:1; }.word-feedback { font-size:11px; padding:10px 6px; inset-inline:4%; }.word-note { font-size:8px!important; }.subway-guide { font-size:8px; }.subway-runner { width:36px; }.word-platform { width:31%; right:4%; height:44px; }.word-platform strong { font-size:10px; }.subway-station { font-size:8px; }
 }
 @media(prefers-reduced-motion:reduce) { .landmark-scene *,.word-action * { animation:none!important; transition:none!important; } }
+
+
+/* 세로로 들면 가로 전환을 안내합니다. 웹에서는 화면 방향을 강제로 돌릴 수 없어
+   (iOS Safari는 orientation lock을 지원하지 않습니다) 안내 화면으로 막습니다. */
+.rotate-gate { display:none; }
+@media(orientation:portrait) and (max-width:700px) {
+  .rotate-gate { position:fixed; inset:0; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:32px; text-align:center; background:linear-gradient(165deg,#12303a,#1d4a52); color:#fdfbf4; }
+  .rotate-gate-icon { display:block; width:66px; height:42px; border:3px solid #fdfbf4; border-radius:8px; animation:rotate-gate-hint 2.6s ease-in-out infinite; }
+  .rotate-gate strong { font-size:18px; letter-spacing:-.5px; }
+  .rotate-gate small { font-size:12px; line-height:1.9; opacity:.78; }
+}
+@keyframes rotate-gate-hint { 0%,40% { transform:rotate(90deg); } 55%,100% { transform:rotate(0); } }
+
+/* 가로로 든 휴대폰: 세로가 390px 안팎이라 머리글·도구함·단어량 패널이 서로 겹칩니다.
+   한 화면에 들어가도록 각 영역의 자리를 다시 잡습니다. */
+@media(orientation:landscape) and (max-height:500px) {
+  .hub-header { min-height:58px; padding:9px 16px 9px 14px; flex-wrap:nowrap; }
+  .hub-brand { font-size:15px; gap:7px; white-space:nowrap; }
+  .union-brand-icon { width:30px; height:30px; }
+  .mode-switch button { padding:7px 16px; font-size:12px; }
+  .hub-account { gap:6px; }
+  .hub-main { padding:62px 112px 60px 196px; min-height:100dvh; }
+  .hub-launchers { display:flex; grid-template-columns:none; gap:14px; width:100%; margin:0; padding:0; overflow:visible; align-items:center; justify-content:center; }
+  .launcher { flex:0 0 112px; width:112px; max-width:none; }
+  .launcher-art { width:88px; max-width:88px; height:88px; border-radius:24px; }
+  .launcher-art svg { width:38px; height:38px; }
+  .launcher-caption { width:100%; min-height:0; margin-top:8px; padding:6px 5px; }
+  .launcher-label { font-size:11px; line-height:1.35; }
+  .launcher-subtitle { font-size:9px; line-height:1.45; margin-top:2px; }
+  .hub-tools { top:50%; bottom:auto; right:10px; transform:translateY(-50%); gap:6px; padding:9px 4px; border-radius:18px; }
+  .hub-tools button { width:54px; gap:3px; }
+  .hub-tools button>span { width:28px; height:28px; border-radius:10px; }
+  .hub-tools svg { width:17px; height:17px; }
+  .hub-tools small { font-size:8px; letter-spacing:-.6px; }
+  .hub-footer { padding:7px 14px; gap:10px; font-size:10px; }
+}

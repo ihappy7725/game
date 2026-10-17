@@ -9,3 +9,11 @@
 @media(max-width:700px) { .vocab-home-progress { left:12px; bottom:85px; width:205px; padding:10px 12px; }.vocab-home-progress small { font-size:9px; }.game-difficulty-options { gap:9px; }.game-difficulty-options button { padding:18px 7px; gap:12px; }.game-difficulty-options b { font-size:19px; }.game-difficulty-options small,.game-difficulty-options em { font-size:9px; }.hub-drawer.vocab-dialog { width:calc(100% - 20px); max-height:calc(100dvh - 20px); padding:43px 14px 20px; }.vocab-blocks { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }.vocab-word-list li { padding:10px; }.vocab-word-list button { padding:9px; }.vocab-flashcard strong { font-size:25px; }.game-controls { top:6px; right:7px; }.game-controls .game-exit { font-size:8px; }.game-controls .sound-button { height:25px; width:25px; } }
 
 .fork-webgl-host,.fork-canvas-world { position:absolute;inset:0; }.fork-webgl-host canvas { display:block; width:100%;height:100%; }.fork-graphics-note { position:absolute;bottom:105px;left:12px;font-size:10px;color:#2d6974;background:#fff9;padding:5px 8px;border-radius:8px; }
+
+/* 가로로 든 휴대폰에서는 카드 줄과 겹치지 않게 왼쪽 아래로 작게 붙입니다. */
+@media(orientation:landscape) and (max-height:500px) {
+  .vocab-home-progress { left:12px; bottom:62px; width:176px; padding:8px 11px; }
+  .vocab-home-progress>span { font-size:11px; margin-bottom:5px; }
+  .vocab-home-progress small { font-size:8px; margin-top:3px; }
+  .vocab-home-progress progress { height:7px; }
+}

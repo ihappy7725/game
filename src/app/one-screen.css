@@ -175,3 +175,60 @@ html:has(.game-fullscreen),body:has(.game-fullscreen) { overflow:hidden; overscr
 .game-fullscreen .cab-result .game-reward-save { padding:7px; border:1px solid #bfd7c8; border-radius:14px; background:#fffdf0eb; color:#315e62; }
 .game-fullscreen .cab-result .game-reward-save p { color:#4b7375; }
 .game-fullscreen .cab-result .game-reward-save button,.game-fullscreen .cab-result>.mt-4 button { color:#315e62; border:1px solid #bfd7c8; border-radius:12px; background:#fffdf0dd; }
+
+
+/* 가로로 든 휴대폰은 브라우저 바를 빼면 세로가 340px 안팎입니다.
+   clamp 기본값으로는 시작 화면 안내문이 잘려 시작 버튼이 가려집니다. */
+@media(orientation:landscape) and (max-height:430px) {
+ .game-fullscreen .word-intro,
+ .game-fullscreen .cab-intro,
+ .game-fullscreen .cab-result,
+ .game-fullscreen .memory-lobby { padding:50px 18px 10px; }
+ .game-fullscreen .word-intro h3,
+ .game-fullscreen .pop-intro h3,
+ .game-fullscreen .pop-result h3 { font-size:clamp(15px,4.4vh,21px); }
+ .game-fullscreen .word-intro p,
+ .game-fullscreen .pop-intro p,
+ .game-fullscreen .pop-result p { font-size:clamp(9px,2.7vh,11px); line-height:1.5; }
+ .game-fullscreen .word-intro>*+*,
+ .game-fullscreen .pop-intro>*+* { margin-top:clamp(3px,1.1vh,8px); }
+ .game-fullscreen .word-game-badge,
+ .game-fullscreen .pop-intro>span:first-child { font-size:clamp(24px,8vh,38px); }
+ .game-fullscreen .pop-intro,
+ .game-fullscreen .pop-result { max-height:calc(100dvh - 54px); gap:clamp(4px,1.3vh,10px); padding:10px 14px; }
+ .game-fullscreen .word-primary { padding-block:8px; }
+ .game-fullscreen .cab-intro .mt-6 { margin-top:6px; }
+ .game-fullscreen .memory-lobby-panel { padding:12px 18px; }
+ .game-fullscreen .memory-lobby h2 { font-size:clamp(17px,4.6vh,24px); }
+ .game-fullscreen .memory-lobby-message { font-size:clamp(9px,2.6vh,11px); margin:8px auto; line-height:1.6; }
+ .game-fullscreen .memory-lobby-emblem { width:clamp(40px,11vh,58px); height:clamp(46px,13vh,66px); font-size:clamp(22px,7vh,32px); margin-bottom:8px; }
+ .game-fullscreen .game-difficulty-screen { padding:44px 12px 10px; }
+ .game-fullscreen .game-difficulty-screen h2 { font-size:clamp(17px,5.2vh,26px); margin:4px; }
+ .game-fullscreen .game-difficulty-options { margin:8px 0; }
+}
+
+@media(orientation:landscape) and (max-height:430px) {
+ .game-fullscreen .flashcard-game { padding:50px 14px 8px!important; gap:6px; }
+ .game-fullscreen .flashcard-game>header { padding:6px 12px; }
+ .game-fullscreen .flashcard-game>header h2 { font-size:15px; }
+ .game-fullscreen .flashcard-game>header p { font-size:9px; margin:2px 0; }
+}
+
+/* 짧은 가로 화면에서 상단 점수 바가 화면의 1/3을 차지해 놀이 영역을 눌렀습니다.
+   바를 위로 올려 좁히고, 오른쪽 조작 버튼과 나란히 둡니다.
+   word-pop.css 보다 뒤에 로드되므로 이 규칙이 최종입니다. */
+@media(orientation:landscape) and (max-height:430px) {
+ .game-fullscreen .arcade-stats { top:6px; left:12px; right:auto; translate:none; width:calc(100% - 205px); height:40px; padding:4px 12px; border-radius:20px; }
+ .game-fullscreen .arcade-stats>* { padding:0 5px; gap:2px; font-size:9px; line-height:1.25; }
+ .game-fullscreen .arcade-stats strong { font-size:15px; }
+ .game-fullscreen .arcade-stats .cab-stage-label,
+ .game-fullscreen .arcade-stats .memory-tempo,
+ .game-fullscreen .arcade-stats .pop-stage-label { font-size:8px; }
+ .game-controls { top:5px; right:8px; }
+}
+
+/* 짧은 가로 화면에서는 차선 버튼이 아래로 내려와 택시 그림과 겹칩니다.
+   택시를 작게 줄이고 더 아래로 붙여 글자를 가리지 않게 합니다. */
+@media(orientation:landscape) and (max-height:430px) {
+ .game-fullscreen .cab-player { width:96px; bottom:1%; }
+}

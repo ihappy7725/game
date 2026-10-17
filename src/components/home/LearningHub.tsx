@@ -92,6 +92,11 @@ export function LearningHub() {
   const title=STUDY.find(e=>e.id===active)?.label ?? "학습 기록";
   const closeStudy=()=>{setMounted(mounted.filter(id=>id!==active));setActive(null);};
   return <div className={`learning-hub mode-${mode}`} data-hub-mode={mode}>
+    <div className="rotate-gate" role="status">
+      <span className="rotate-gate-icon" aria-hidden />
+      <strong>화면을 가로로 돌려 주세요</strong>
+      <small>토플 유니온은 가로 화면에 맞춰 만들어졌어요.</small>
+    </div>
     <LandmarkScene mode={mode} moving={!opening.active && !game && !active && !isDialog} />
     <div inert={Boolean(opening.active || game || isDialog || active)} className="hub-shell">
       <header className="hub-header">

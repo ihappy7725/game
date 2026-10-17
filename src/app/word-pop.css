@@ -138,3 +138,11 @@
  .pop-glossary { align-self:start; }
  .game-fullscreen .pop-glossary .pop-word-key { left:0; right:auto; width:260px; grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
+
+
+/* 점수 바가 위로 올라간 만큼 보드가 쓰는 높이를 늘립니다. */
+@media(orientation:landscape) and (max-height:430px) {
+ .game-fullscreen .pop-play { padding:50px 10px 4px; gap:4px 12px; }
+ .game-fullscreen .pop-mission-copy>strong { font-size:14px; }
+ .game-fullscreen .pop-mission-copy>span,.game-fullscreen .pop-mission-copy>small { font-size:7px; }
+}
